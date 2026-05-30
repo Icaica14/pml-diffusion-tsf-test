@@ -1,0 +1,2 @@
+timestamp,dataset,model,season_length,split,n_windows,H,tau,D,n_samples,seed,MAE,RMSE,MASE,CRPS,pinball,cov50,width50,cov90,width90,predict_s,platform
+2026-05-30T19:09:45+00:00,exchange,seasonal_naive,1,test,1430,60,30,8,100,42,0.009812,0.016592,4.5263,0.007175,0.00379,0.444543,0.016123,0.862284,0.044464,0.5929,macOS-14.7.3-x86_64-i386-64bit
