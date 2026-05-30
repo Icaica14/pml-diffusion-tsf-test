@@ -25,28 +25,28 @@
 ## Part 1 — The project in one page
 
 ### 1.1 Research question (one sentence)
-> Can a **diffusion model** produce **probabilistic forecasts** of a future time series — a *distribution* of plausible futures rather than a single number — that are more **accurate**, better **calibrated**, or more **informative** than classical and deep-probabilistic baselines, at what **computational cost**, and worth how much **economic value** (money saved when a real decision — scheduling a battery — is driven by the forecast)?
+> Can a **diffusion model** produce **probabilistic forecasts** of a future time series — a *distribution* of plausible futures rather than a single number — that are more **accurate**, better **calibrated**, or more **informative** than classical and deep-probabilistic baselines, and at what **computational cost**?
 
 ### 1.2 Abstract (the 6-sentence version)
-Real forecasting is not "tomorrow's electricity demand will be 100"; it is "here is the distribution of plausible tomorrows." We frame multi-step forecasting as learning the **conditional generative distribution** `p(future | past)` and we instantiate it with a **conditional denoising diffusion model**, trained by the same ELBO / noise-prediction objective the course derives in §11.2. We compare it head-to-head against a naive baseline, a classical statistical model (ARIMA/ETS), and a deep autoregressive probabilistic model (DeepAR), on a real multivariate dataset. We evaluate **four** things the exam rewards: **point accuracy** (MAE/RMSE), **probabilistic quality** (CRPS, coverage, calibration), **cost** (training/inference time, and the quality-vs-denoising-steps trade-off), and **economic value** — the money saved when a battery is scheduled on each model's forecast, because a better-calibrated distribution leads to cheaper, more robust decisions. Our thesis is deliberately non-triumphalist: diffusion buys *richer, better-calibrated uncertainty*, but its advantage depends on horizon, dataset, and a real sampling-cost penalty. The deliverable is an 8-minute talk and a clean repo that demonstrates we understood the course *and* extended its final chapter into a working application.
+Real forecasting is not "tomorrow's electricity demand will be 100"; it is "here is the distribution of plausible tomorrows." We frame multi-step forecasting as learning the **conditional generative distribution** `p(future | past)` and we instantiate it with a **conditional denoising diffusion model**, trained by the same ELBO / noise-prediction objective the course derives in §11.2. We compare it head-to-head against a naive baseline, a classical statistical model (ARIMA/ETS), and a deep autoregressive probabilistic model (DeepAR), on a real multivariate dataset. We evaluate **three** things the exam rewards: **point accuracy** (MAE/RMSE), **probabilistic quality** (CRPS, coverage, calibration), and **cost** (training/inference time, and the quality-vs-denoising-steps trade-off). Our thesis is deliberately non-triumphalist: diffusion buys *richer, better-calibrated uncertainty*, but its advantage depends on horizon, dataset, and a real sampling-cost penalty. The deliverable is an 8-minute talk and a clean repo that demonstrates we understood the course *and* extended its final chapter into a working application.
 
 ### 1.3 The thesis we will defend (the "story")
 **"For forecasting, the right question is not *what* will happen but *what could* happen and *how sure are we*. Diffusion models answer that second question natively — they generate samples of the future — but uncertainty quality is the prize, not a lower MAE, and it comes at a sampling cost we can measure and tune."**
 
-This story is strong because it is *falsifiable* (maybe diffusion loses — that is still a result), *probabilistic* (it lives in the heart of PML), and *practical* (the cost trade-off is a real deployment concern). And it is *economically grounded*: we do not just claim better uncertainty — we measure what that uncertainty is **worth, in euros**, by letting each model's forecast schedule a battery and pricing the resulting decisions (Part 3.5, §6.4, experiment E6).
+This story is strong because it is *falsifiable* (maybe diffusion loses — that is still a result), *probabilistic* (it lives in the heart of PML), and *practical* (the cost trade-off is a real deployment concern).
 
 ### 1.4 Success criteria, mapped to the professor's grading rubric
 | Grading criterion (from the exam description) | How this project scores on it |
 |---|---|
 | Clarity & completeness of exposition | 8 tight slides, one message each (Part 11); a clean repo; honest results. |
-| **Originality w.r.t. course content** | We extend §11.2 (diffusion) from *unconditional generation* to *conditional forecasting* — exactly the survey's framing. Plus an aleatoric-vs-epistemic analysis (§1.4 here) the course sets up but does not apply to diffusion. Plus a **decision-focused economic evaluation** (euros saved by a battery scheduled on each model's forecast) — closing the loop from probability to money, which almost no exam project does. |
+| **Originality w.r.t. course content** | We extend §11.2 (diffusion) from *unconditional generation* to *conditional forecasting* — exactly the survey's framing. Plus an aleatoric-vs-epistemic analysis (§1.4 here) the course sets up but does not apply to diffusion. |
 | Understanding of theory & practice | The whole pipeline is mapped to course chapters (Part 2); we can derive the diffusion loss in the professor's notation; we built (at least a toy of) it ourselves. |
 | Clarity & precision in the oral | Per-person oral prep with likely questions mapped to course pages (Part 11.3). |
 
 ### 1.5 Scope decisions (locked, from the planning Q&A)
 - **Timeline:** flexible → the plan is **modular** with stop-after tiers (Part 9.4). You can stop after Tier 0 and still have a complete project.
 - **Compute:** Colab Pro / paid GPU → TimeGrad-class models are feasible; we budget for it (Part 8.2).
-- **Scope:** **balanced** → one frontier diffusion model + full baselines + probabilistic evaluation + **one robustness experiment** (regime shift) + an **economic-value evaluation** (battery dispatch) as a **fourth pillar**, implemented as a module *over the forecasts we already produce* (no extra training). A second dataset / second diffusion model is a *stretch*, not a requirement.
+- **Scope:** **balanced** → one frontier diffusion model + full baselines + probabilistic evaluation + **one robustness experiment** (regime shift). A second dataset / second diffusion model is a *stretch*, not a requirement.
 - **Team skills:** comfortable Python, new to deep-learning frameworks → **library-first** (GluonTS / PyTorchTS / Darts / statsforecast), with a small **from-scratch toy DDPM** as the "understanding artifact" (Part 5.4). We use libraries to get results and read their internals to avoid black-box usage.
 
 ---
@@ -72,7 +72,6 @@ This is the highest-value differentiator for the grade. The course *ends* on dif
 | DeepAR baseline (likelihood + sampling) | §1.2 (p.3–4); predictive dist. §6.5 (p.64) | "Autoregressive likelihood model; Monte-Carlo roll-outs give the predictive distribution." |
 | Classical ARIMA/ETS baseline | state-space ≈ HMM Ch 5 (p.49); Bayesian lin. reg. Ch 6 | "Linear-Gaussian dynamics; predictive intervals from the Gaussian noise model." |
 | CRPS / proper scoring | KL & scoring §2.3 (p.20) | "CRPS generalizes MAE to distributions; a proper scoring rule." |
-| **Economic value (decision-focused)** | decision theory & expected loss §2.3 (p.20); predictive dist. §6.5 (p.64) | "Optimal decisions use a *quantile* of the predictive distribution; CRPS = average decision regret over all cost ratios — we turn that regret into euros via battery scheduling." |
 | (Optional) GP baseline | Ch 12 Kernels & GPs (p.129+, starred) | "A fully-Bayesian forecaster with epistemic uncertainty — the contrast case." |
 
 ### 2.2 The one derivation we must own (in the professor's notation)
@@ -115,13 +114,6 @@ Estimate and sample from `p(x_{t+1:t+τ} | x_{t-H+1:t})`. For diffusion and Deep
 | ARIMA/ETS | Gaussian predictive | mean | ±z·σ analytic interval |
 | DeepAR | sampled trajectories | sample mean/median | sample quantiles |
 | Diffusion (TimeGrad) | sampled trajectories | sample mean/median | sample quantiles |
-
-### 3.5 From forecast to decision — economic value (the 4th pillar)
-A forecast only has value if it changes a *decision*. Our economic pillar makes that explicit with a **battery (energy-storage) scheduling** problem, run on top of the forecasts the models already produce:
-- **State & controls.** A battery with energy capacity `E_max`, power limit `P_max`, round-trip efficiency `η`, and state-of-charge `SoC_t`. At each step we choose a charge/discharge action `u_t ∈ [−P_max, P_max]`, with `SoC` kept within `[0, E_max]`.
-- **Objective.** Minimize the electricity **bill** over the horizon under a time-of-use price `π_t` (plus, where relevant, a peak/demand charge), while serving the dataset's load (and/or PV) series.
-- **Decision under uncertainty.** The schedule is chosen *before* the future is known. With a **point** forecast you plan against a single future; with a **distribution** (diffusion / DeepAR samples) you plan against the *spread* — a small **linear program (LP)** solved either on the point path (*deterministic plan*) or over `S` sampled trajectories (*stochastic plan*, sample-average approximation).
-- **Value.** Apply each schedule to the **true** future, compute the realized bill, and define **money saved** = bill(model B) − bill(model A), benchmarked against a perfect-foresight **oracle** (lower bound) and a naive baseline (ceiling). The "value of the distribution" itself = bill(deterministic plan from the point forecast) − bill(stochastic plan from the full distribution). Full protocol in §6.4; experiment in E6.
 
 ---
 
@@ -217,7 +209,7 @@ Because the team is new to DL frameworks and the oral rewards real understanding
 
 ## Part 6 — Evaluation protocol
 
-Evaluation *is* the project's rigor. We measure **four** families (point · probabilistic · cost · **economic value**) + enforce statistical hygiene.
+Evaluation *is* the project's rigor. We measure **three** families (point · probabilistic · cost) + enforce statistical hygiene.
 
 ### 6.1 Point accuracy
 - **MAE**, **RMSE** (on the predictive **mean/median**), and **MASE** (scale-free, lets us compare across series/datasets honestly). Optionally sMAPE.
@@ -235,20 +227,6 @@ Evaluation *is* the project's rigor. We measure **four** families (point · prob
 - **GPU-hours and a rough € estimate** (Colab/cloud) — this is a real, gradeable practical insight.
 - **The diffusion-specific curve:** quality (CRPS) vs **number of denoising steps `T`** (E3). This is where diffusion's famous slow-sampling limitation becomes a *measured* result, tying directly to the survey's stated limitation.
 
-### 6.4 Economic value (decision-focused evaluation — the 4th pillar)
-This family answers "what is the better forecast *worth*?" by turning each model's forecast into a **battery-dispatch decision** and pricing it. It reuses the E1 forecasts — **no extra training** — and runs entirely in `src/eval/economic.py`.
-- **The decision problem.** Given a forecast of the future load/price, choose a charge/discharge schedule `u_{1:τ}` for a battery (`E_max, P_max, η, SoC`) that minimizes the electricity **bill** under a time-of-use price `π_t` (optionally a peak/demand charge). The schedule is a small **linear program (LP)** — convex, solved in milliseconds with `cvxpy`/`PuLP`.
-- **Two plans per model.**
-  - *Deterministic plan:* feed the LP the **point** forecast (predictive mean/median) → one schedule.
-  - *Stochastic plan:* feed the LP the **whole distribution** — `S` sampled trajectories — and minimize the *expected* bill (**sample-average approximation, SAA**) → a schedule hedged against the spread. Only the probabilistic models (DeepAR, TimeGrad, naive-bootstrap) can produce this; that asymmetry is exactly the point.
-- **Realized cost & money saved.** Apply every schedule to the **true** future and compute the realized bill. Then:
-  - **money saved vs naive** = bill(naive plan) − bill(model plan) — the headline € figure per model;
-  - **value of the distribution** = bill(deterministic plan) − bill(stochastic plan) for the *same* model — what the uncertainty itself is worth;
-  - benchmark both against a perfect-foresight **oracle** (true future into the LP → lower bound on bill) and the naive baseline (ceiling), so every number is a fraction of the *achievable* savings, not an absolute that hides the scale.
-- **Why this is the same probability, in euros.** Optimal storage decisions use a **quantile** of the predictive distribution, not its mean (over/under-charging cost asymmetrically — a newsvendor structure). CRPS *is* the average pinball/quantile loss over all quantile levels, i.e. the average decision regret across all cost ratios — so a lower CRPS should *predict* a lower bill. E6 tests whether it actually does, on real money.
-- **Fallback (if the LP/MPC proves heavy).** Replace the multi-step LP with a per-step **newsvendor** rule (closed-form optimal quantile given the cost ratio) — same economic story, ~20 lines, no solver. Documented in E6.
-- **Library:** `cvxpy` (or `PuLP`) for the LP; everything else is NumPy over the sample arrays we already have.
-
 ### 6.5 Statistical hygiene (do not skip — it's cheap originality)
 - **≥3 random seeds** per learned model; report **mean ± std**, not single runs.
 - **Identical** splits, scaling, `H`, `τ`, and test windows across all models.
@@ -256,7 +234,7 @@ This family answers "what is the better forecast *worth*?" by turning each model
 - **Fairness rules:** point metrics computed from the predictive mean for *all* models; never compare a tuned diffusion against an untuned baseline; never pick the best horizon post-hoc.
 
 ### 6.6 Evaluation pitfalls to actively guard against
-Look-ahead leakage · scaling fit on test · straddling-window leakage · comparing distributional vs point models unfairly · cherry-picking the favorable horizon/seed · reporting CRPS without saying CRPS-sum-vs-mean · (economic) using the same price path to *both* tune and evaluate the schedule, or quoting absolute € without the oracle/naive bracket. Put these in the code-review checklist (Part 8.6).
+Look-ahead leakage · scaling fit on test · straddling-window leakage · comparing distributional vs point models unfairly · cherry-picking the favorable horizon/seed · reporting CRPS without saying CRPS-sum-vs-mean. Put these in the code-review checklist (Part 8.6).
 
 ---
 
@@ -298,16 +276,6 @@ Each experiment states a **hypothesis**, **setup**, **what we vary/measure**, th
 - **Measure:** CRPS & coverage drop, train→shift; which model keeps intervals honest.
 - **Artifact:** a before/after calibration plot + a degradation table.
 
-### E6 — Economic value / battery dispatch (the 4th pillar) ← Tier 1
-- **Hypothesis:** a battery scheduled on a **probabilistic** forecast realizes a **lower electricity bill** than one scheduled on a **point** forecast — and a better-calibrated forecast (lower CRPS) buys more savings. I.e. *better uncertainty = real money*.
-- **Setup:** reuse the **E1** forecasts (no retraining). For each model build (i) a *deterministic* LP schedule from the point forecast and (ii) a *stochastic* (SAA) LP schedule from its sampled trajectories. Fix one battery spec (`E_max, P_max, η`) and one time-of-use price `π_t`; apply every schedule to the **true** future. Compute realized bills against an **oracle** (perfect-foresight LP, lower bound) and the **naive** plan (ceiling).
-- **Measure:** realized **bill (€)** per model; **money saved vs naive**; **value of the distribution** = bill(deterministic) − bill(stochastic) for the same model; **savings as a fraction of the oracle's achievable savings**. Then **correlate CRPS (from E1) with realized savings** across models — the punchline that ties the probabilistic pillar to euros.
-- **Vary (cheap sweeps over existing data):** the **cost asymmetry** (price spread / demand-charge weight) — the newsvendor quantile shifts, and the distribution should help *more* as the asymmetry grows; optionally battery size `E_max`.
-- **Supports thesis if:** stochastic ≥ deterministic on realized bill, the gap widens with cost asymmetry, and lower-CRPS models save more €.
-- **Refutes/complicates if:** the point forecast schedules just as cheaply (e.g. price too flat, battery too small) — *also a clean, honest finding* ("here the distribution wasn't worth paying for, and here's the regime where it would be").
-- **Fallback:** if the LP/MPC is heavy, use the per-step **newsvendor** rule (closed-form optimal quantile) — same story, no solver.
-- **Artifact:** a **money-saved bar chart** (€ per model, with oracle/naive brackets) + a **savings-vs-cost-asymmetry** line plot + a **CRPS-vs-€-saved** scatter.
-
 ### E5 — Generality (stretch, Tier 2)
 - **Either** a second dataset (does the E1 story hold?) **or** a second diffusion model (CSDI) **or** the GP epistemic-uncertainty contrast.
 - **Artifact:** a "does it generalize?" table or the uncertainty-decomposition figure.
@@ -330,11 +298,11 @@ pml-diffusion-tsf/
 ├── src/
 │   ├── data/                 # loaders, splitting, scaling, windowing, manifest
 │   ├── models/               # thin wrappers: naive, arima, deepar, timegrad, toy_ddpm
-│   ├── eval/                 # metrics (CRPS, coverage, calibration), economic.py (battery dispatch), runners
+│   ├── eval/                 # metrics (CRPS, coverage, calibration), runners
 │   ├── viz/                  # consistent plotting (forecasts, intervals, curves)
 │   └── utils/                # seeds, logging, timing, config loading
 ├── notebooks/                # exploration + the toy-DDPM teaching notebook
-├── experiments/              # entry scripts: run_E0.py ... run_E4.py, run_E6.py (economic)
+├── experiments/              # entry scripts: run_E0.py ... run_E4.py
 ├── results/                  # CSVs (the results registry) — committed
 ├── figures/                  # generated plots for slides — committed
 └── runs/                     # checkpoints, logs — gitignored
@@ -373,7 +341,7 @@ The work is split into **three fundamental, isolated steps** (the team's time-un
 ### Roles (each person owns a vertical slice end-to-end so each can answer in the oral)
 - **Person A — Baselines & Statistics owner:** M0, M1, the classical/PML-statistics narrative, point metrics.
 - **Person B — Diffusion & Infra owner:** M2, M3, the toy DDPM, Colab/training, configs.
-- **Person C — Evaluation, Viz & Story owner:** CRPS/coverage/calibration, the **economic-value module** (`src/eval/economic.py`, battery dispatch, E6), all figures, the slide narrative, oral-question bank. *(Person A co-owns the tariff/price-signal economics and the newsvendor framing, since it's the decision-theory side of the classical narrative.)*
+- **Person C — Evaluation, Viz & Story owner:** CRPS/coverage/calibration, all figures, the slide narrative, oral-question bank.
 Everyone reads Part 2 (the spine) — the oral grades individuals.
 
 ### Step 1 — Understand, restrict, formalize *(close when you can say the project in 30 seconds)*
@@ -387,12 +355,12 @@ Everyone reads Part 2 (the spine) — the oral grades individuals.
 
 ### Step 2 — Build pipeline & run experiments *(close when E0+E1 are green on the primary dataset)*
 - **Goal:** produce solid quantitative results.
-- **Definition of done:** E0 passes; E1 table complete with ≥3 seeds; E3 trade-off curve done; **E6 economic-value run on the E1 forecasts**; E4 attempted; all figures generated from scripts.
+- **Definition of done:** E0 passes; E1 table complete with ≥3 seeds; E3 trade-off curve done; E4 attempted; all figures generated from scripts.
 - **Per person:**
-  - A: M0 + M1 running and evaluated; point-metric tables; residual diagnostics figure; co-build the tariff/price signal + newsvendor framing for E6.
+  - A: M0 + M1 running and evaluated; point-metric tables; residual diagnostics figure.
   - B: M2 (DeepAR) + M3 (TimeGrad) training on Colab; the toy DDPM; E3 sweep; checkpoints saved.
-  - C: the evaluation module (CRPS/coverage/calibration) + the **economic-value module** (`economic.py`: battery LP, deterministic vs stochastic plans, E6) + the master results runner; all comparison/interval/calibration plots and the money-saved / CRPS-vs-€ figures; keep the registry clean.
-- **Output artifacts:** `results/registry.csv` populated · master table · forecast/interval plots · E3 curve · **E6 money-saved chart + CRPS-vs-€ scatter** · (E4 degradation).
+  - C: the evaluation module (CRPS/coverage/calibration) + the master results runner; all comparison/interval/calibration plots; keep the registry clean.
+- **Output artifacts:** `results/registry.csv` populated · master table · forecast/interval plots · E3 curve · (E4 degradation).
 
 ### Step 3 — Interpret, write the story, prepare the oral *(close when the 8-min deck + oral bank are done)*
 - **Goal:** turn tables into an 8-minute argument and individual oral readiness.
@@ -400,14 +368,14 @@ Everyone reads Part 2 (the spine) — the oral grades individuals.
 - **Per person:**
   - A: the baselines/statistics slides + the "is the baseline actually beaten?" honesty point; ARIMA↔state-space oral answers.
   - B: the diffusion-mechanism slide (forward/reverse/loss in the notes' notation) + the E3 cost story; diffusion oral answers (derive the loss).
-  - C: the story arc, the results & calibration slides, the **economic-value slide (€ saved by scheduling a battery on each forecast)**, the uncertainty-decomposition (§2.3) slide; rehearsal + timing; assemble the oral bank.
+  - C: the story arc, the results & calibration slides, the uncertainty-decomposition (§2.3) slide; rehearsal + timing; assemble the oral bank.
 - **Output artifacts:** `slides.pdf` · `speaker_notes.md` · `oral_qa.md` · polished repo.
 
 ### 9.4 Modular "stop-after" tiers (because the timeline is flexible)
 | Tier | Contains | Coherent project on its own? |
 |---|---|---|
 | **Tier 0 — MVP** | Steps 1–2 partial: E0 + E1 (M0–M3) on one dataset; basic slides | **Yes** — a complete comparison study. |
-| **Tier 1 — Target (your "balanced")** | + E3 (steps vs cost) + E4 (regime shift) + calibration + **E6 (economic value / battery dispatch)** | Yes, and clearly exam-strong. |
+| **Tier 1 — Target (your "balanced")** | + E3 (steps vs cost) + E4 (regime shift) + calibration | Yes, and clearly exam-strong. |
 | **Tier 2 — Stretch** | + E2 full sweep, E5 (2nd dataset / CSDI / GP), toy-DDPM deep-dive, uncertainty-decomposition figure | Yes, competitive for *laude*. |
 
 Drive to Tier 0 first; *then* climb. Never leave Tier 0 half-done to start Tier 2.
@@ -423,8 +391,6 @@ Drive to Tier 0 first; *then* climb. Never leave Tier 0 half-done to start Tier 
 | Data leakage (scaling/window) | Med | High | central loader; review checklist (8.6); manifest of split dates | A/C |
 | Compute / € overrun | Med | Med | iterate on Exchange; cache; cap seeds at 3; cheap models first | B |
 | Scope creep (chasing Tier 2 early) | High | Med | enforce tier gates (9.4); MVP before stretch | all |
-| Economic LP/MPC (E6) too heavy or fiddly | Med | Med | one fixed battery spec + a single ToU price; convex LP solves in ms; **fallback to closed-form per-step newsvendor** (no solver) — same story | C/A |
-| E6 shows "distribution not worth it" (flat price / tiny battery) | Med | Low | reframe as an honest finding; sweep cost-asymmetry to expose the regime where it *does* pay off | C |
 | Oral exposes shallow understanding | Med | High | the spine (Part 2) + toy DDPM + per-person Q&A bank | all |
 | One person becomes a bottleneck | Med | Med | vertical slices (each owns a runnable path); weekly sync | all |
 
@@ -432,7 +398,7 @@ Drive to Tier 0 first; *then* climb. Never leave Tier 0 half-done to start Tier 
 
 ## Part 11 — Deliverables
 
-### 11.1 The 8-minute presentation (≈9–10 slides, one message each; if time is tight, merge slide 8 economic-value into slide 9 discussion)
+### 11.1 The 8-minute presentation (≈8–9 slides, one message each)
 1. **Problem** — "forecasting = plausible futures, not one number." (the hook)
 2. **PML framing** — `p(y_future | x_past)`; generative + probabilistic; aleatoric vs epistemic.
 3. **Diffusion idea** — true future → add noise → learn to denoise *conditioned on the past* → sample trajectories. (one clean schematic)
@@ -440,9 +406,8 @@ Drive to Tier 0 first; *then* climb. Never leave Tier 0 half-done to start Tier 
 5. **Experimental setup** — dataset, `H`, `τ`, temporal split, the model ladder.
 6. **Main result (E1)** — the table: MAE/RMSE · CRPS · coverage · cost. Plus one forecast-with-intervals plot.
 7. **The diffusion-specific insight (E3, +E4)** — quality-vs-denoising-steps trade-off; (regime-shift calibration).
-8. **Economic value (E6)** — "what is better uncertainty *worth*?" the money-saved bar chart from scheduling a battery on each forecast, with the oracle/naive bracket, and the CRPS-vs-€-saved punchline. *(The pillar that turns probability into money — the slide that lands.)*
-9. **Discussion** — when diffusion wins / loses; what uncertainty we capture and miss; cost caveat.
-10. **Conclusion** — "richer, better-calibrated uncertainty, at a tunable sampling cost; useful when uncertainty matters — and we can price exactly how useful." + future work (Bayesian/ensemble diffusion).
+8. **Discussion** — when diffusion wins / loses; what uncertainty we capture and miss; cost caveat.
+9. **Conclusion** — "richer, better-calibrated uncertainty, at a tunable sampling cost; useful when uncertainty matters." + future work (Bayesian/ensemble diffusion).
 - **Deliberately NOT shown:** every ablation, every seed, library plumbing, failed runs. Keep only what supports the thesis.
 
 ### 11.2 Supporting artifacts
@@ -459,7 +424,6 @@ Build `oral_qa.md` with answers each member can give. Seed questions:
 - *ARIMA as a probabilistic model — assumptions?* → Ch 5/6. (A)
 - *Score-based view & link to Langevin/MCMC?* → §11.2.5 (p.127), Ch 8. (B)
 - *Why is diffusion sampling slow; how did you measure/mitigate it?* → E3. (B/C)
-- *How do you turn a forecast into money? why a quantile, not the mean?* → decision theory / expected loss §2.3 (p.20); newsvendor + battery LP, E6. "Optimal storage uses a quantile set by the cost asymmetry; CRPS is the average pinball loss over all such quantiles, so lower CRPS should mean a lower bill — E6 checks it does." (C/A)
 
 ---
 
@@ -474,8 +438,6 @@ Recall the team has studied through Ch 5. The project needs Ch 9–11 most.
 | DeepAR paper (Salinas et al.) | A/B | Step 2 | the deep baseline |
 | CRPS / proper scoring (Gneiting & Raftery '07) | C | Step 1–2 | metric correctness |
 | §1.1.1 uncertainty; Ch 12 GP (skim) | C | Step 2–3 | the discussion slide |
-| Decision theory / expected loss §2.3; pinball (quantile) loss & the **newsvendor** model | C/A | Step 2 | the economic pillar (E6): why optimal decisions use a quantile, CRPS = average pinball loss |
-| Battery/storage dispatch as an LP (any short MPC/energy-arbitrage primer) | C | Step 2 | implement `economic.py` (deterministic vs SAA stochastic schedule) |
 | (opt.) CSDI paper | B | Step 3 (Tier 2) | second diffusion model |
 
 ---
@@ -490,7 +452,7 @@ Recall the team has studied through Ch 5. The project needs Ch 9–11 most.
 >
 > **Question.** Can a conditional diffusion model estimate `p(future | past)` — a distribution of plausible future trajectories — with better-calibrated uncertainty than classical and deep-probabilistic baselines, and at what sampling cost?
 >
-> **Method.** On a real multivariate dataset (e.g., Solar/Electricity), we compare a seasonal-naive baseline, a classical model (ARIMA/ETS), a deep autoregressive probabilistic model (DeepAR), and a diffusion model (TimeGrad), plus a small from-scratch conditional DDPM built from the Algorithms in §11.2 to demonstrate understanding. We evaluate point accuracy (MAE/RMSE/MASE), **probabilistic quality (CRPS, coverage, calibration)**, **computational cost** (including a quality-vs-denoising-steps trade-off and a regime-shift robustness test), and a **decision-focused economic value** — the money saved when each model's forecast schedules a battery against a time-of-use price, benchmarked against a perfect-foresight oracle.
+> **Method.** On a real multivariate dataset (e.g., Solar/Electricity), we compare a seasonal-naive baseline, a classical model (ARIMA/ETS), a deep autoregressive probabilistic model (DeepAR), and a diffusion model (TimeGrad), plus a small from-scratch conditional DDPM built from the Algorithms in §11.2 to demonstrate understanding. We evaluate point accuracy (MAE/RMSE/MASE), **probabilistic quality (CRPS, coverage, calibration)**, and **computational cost** (including a quality-vs-denoising-steps trade-off and a regime-shift robustness test).
 >
 > **Connection to the course.** The training objective is the §11.2 noise-prediction loss (a reparameterized ELBO, §9.2/§10.4.1); sampling is reverse-chain ancestral sampling (§3.3.1); we also discuss the score-based/Langevin view (§11.2.5) and what *kind* of uncertainty — aleatoric vs epistemic (§1.1.1) — the model captures.
 >
@@ -508,12 +470,6 @@ Recall the team has studied through Ch 5. The project needs Ch 9–11 most.
 - **Coverage / calibration** — do x% intervals contain the truth x% of the time — eval (Part 6).
 - **CRPS-sum** — multivariate CRPS used by TimeGrad (sum channels, then score).
 - **Pinball (quantile) loss** — the asymmetric loss whose minimizer is a given quantile; CRPS = its average over all quantile levels — §2.3 (p.20).
-- **Newsvendor model** — the textbook decision problem whose optimum is a quantile set by the cost ratio (cost of over- vs under-shooting) — decision theory §2.3.
-- **Battery / storage dispatch** — choosing a charge/discharge schedule over time to minimize a bill, subject to capacity/power/efficiency limits — E6.
-- **Time-of-use (ToU) price** — an electricity price `π_t` that varies by hour; what makes storage arbitrage (and forecasting) worthwhile.
-- **Demand / peak charge** — a bill term proportional to the *maximum* power drawn in the period — rewards shaving peaks the forecast predicts.
-- **SAA (sample-average approximation)** — approximate "minimize expected cost" by averaging the cost over the model's `S` sampled future trajectories — E6 stochastic plan.
-- **Oracle / regret** — the perfect-foresight cost (lower bound); regret = realized cost − oracle cost; we report savings as a fraction of the oracle's achievable savings.
 
 ## Appendix C — References
 - *Diffusion Models for Time Series Forecasting: A Survey*, arXiv:2507.14507 (2025).
@@ -522,10 +478,9 @@ Recall the team has studied through Ch 5. The project needs Ch 9–11 most.
 - Salinas et al., *DeepAR*, Int. J. Forecasting 2020.
 - Ho et al., *Denoising Diffusion Probabilistic Models* (DDPM), NeurIPS 2020.
 - Gneiting & Raftery, *Strictly Proper Scoring Rules*, JASA 2007.
-- Gneiting & Katzfuss, *Probabilistic Forecasting*, Annual Review of Statistics 2014 — decision value of calibrated forecasts.
+- Gneiting & Katzfuss, *Probabilistic Forecasting*, Annual Review of Statistics 2014 — calibration and proper scoring of probabilistic forecasts.
 - Bortolussi, *PML Lecture Notes* — Ch 1, 2, 3, 5, 8, 9, 10, 11, 12.
 - Yang et al., *Diffusion Models: A Comprehensive Survey* (2022) — already in the PML folder.
-- (E6 background) any standard treatment of the **newsvendor** problem and **battery energy arbitrage / economic dispatch** as a linear program — for the decision-value pillar.
 
 ## Appendix D — Dataset quick-facts (fill during Step 1)
 | | primary = ? | iteration = Exchange | stretch = ? |
@@ -536,8 +491,6 @@ Recall the team has studied through Ch 5. The project needs Ch 9–11 most.
 | chosen H / τ | | / | |
 | regime-shift idea (E4) | | | |
 | published CRPS-sum (E0 target) | | | |
-| price signal for E6 (ToU tariff / market price) | | | |
-| battery spec for E6 (E_max / P_max / η) | | | |
 
 ---
 
@@ -584,7 +537,6 @@ Learned models depend on the random seed (weight initialization, batch order). A
 - **Interval width:** at equal coverage, narrower is better (sharper).
 - **PIT histogram:** you want it **flat**. U-shaped = overconfident; bell-shaped = too cautious. It is the visual honesty check of the forecast.
 - **CRPS-vs-`T` curve (E3):** you're looking for a **knee** — a point beyond which adding denoising steps no longer improves quality but keeps costing time. That knee is the "memorable slide".
-- **Money-saved bar / CRPS-vs-€ scatter (E6):** the stochastic plan should beat the deterministic one, savings should grow with cost asymmetry, and lower-CRPS models should sit higher on the € axis.
 
 #### E.1.6 Threats to validity (the list to fear)
 These are the ways an experiment can *look* successful and be false. Print it and use it as a checklist:
@@ -594,7 +546,6 @@ These are the ways an experiment can *look* successful and be false. Print it an
 - **Unfair comparison:** distributional vs point model without bringing both to the same metric.
 - **Cherry-picking:** post-hoc choice of favorable seed/horizon/threshold.
 - **CRPS ambiguity:** reporting "CRPS" without saying whether it's per-channel mean or CRPS-sum (they're not comparable).
-- **(Economic) price double-use:** using the same price path to *both* tune and evaluate a schedule, or quoting absolute € without the oracle/naive bracket.
 
 ### E.2 — Runbook: how you actually run it, step by step
 
@@ -632,18 +583,6 @@ These are the ways an experiment can *look* successful and be false. Print it an
 3. Measure the *drop* in CRPS and coverage from normal→shifted, for each model.
 4. Artifact: a before/after calibration plot + a degradation table. The story is "who keeps the intervals honest under shift?".
 
-#### E.2.4-bis Run E6 (economic value / battery dispatch)
-> Requires no retraining: it runs *over* the forecasts already saved in E1. It's the pillar that turns probability into euros.
-1. **Fix the economic scene once:** a battery spec (`E_max, P_max, η`) and a time-of-use price `π_t` (a realistic ToU tariff, or an hourly market price). Put them in the config and in Appendix D.
-2. **For each model, build two schedules** in `src/eval/economic.py`:
-   - *deterministic:* feed the LP the **point** forecast (mean/median) → one schedule `u_{1:τ}`;
-   - *stochastic (SAA):* feed the LP the `S` sampled trajectories and minimize the **expected** bill → a hedged schedule. (Only probabilistic models can do this — that's the point.)
-3. **Apply each schedule to the true future**, compute the realized bill. Also compute the **oracle** (true future into the LP → lower bound) and the **naive** plan (ceiling).
-4. **Record** in `registry.csv`: bill (€) per model and plan, **money saved vs naive**, **value of the distribution** (deterministic − stochastic), and the fraction of the oracle's achievable savings.
-5. **Cost-asymmetry sweep:** repeat varying the price spread (or the demand-charge weight). Expected: the distribution helps *more* as the asymmetry grows.
-6. **Artifacts:** money-saved bar chart (with oracle/naive brackets) + savings-vs-asymmetry line + **CRPS(from E1)-vs-€-saved** scatter. Expected conclusion: lower CRPS ⇒ lower bill.
-7. **If the LP gives trouble:** fall back to the per-step **newsvendor** rule (closed-form optimal quantile given the cost ratio) — same story, ~20 lines, no solver.
-
 #### E.2.5 Cross-cutting discipline (applies to every experiment)
 - **One config = one run:** no magic numbers in code; everything in YAML (model, data, `H`, `τ`, `T`, seed).
 - **Checkpoints saved to Drive** after every training run, so a Colab disconnect doesn't cost a run.
@@ -656,6 +595,5 @@ The experimental phase is closed (Tier 1, the "balanced" one) when:
 - ☐ E0 is green and documented (reproduction row + gap note);
 - ☐ the E1 table is complete, with mean ± standard deviation over ≥3 seeds, script-generated;
 - ☐ the E3 trade-off curve exists with a readable knee;
-- ☐ E6 has been run over the E1 forecasts: money-saved chart (with oracle/naive brackets) + CRPS-vs-€ scatter;
 - ☐ E4 has been attempted, with a before/after calibration plot;
 - ☐ every number in every figure is traceable back to a row of `results/registry.csv` and a committed YAML config.

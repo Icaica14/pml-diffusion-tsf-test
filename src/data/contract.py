@@ -108,7 +108,7 @@ class ForecastDataset:
 
     ``splits`` holds the **scaled**, time-major arrays for ``train``/``val``/``test``.
     ``raw_splits`` keeps the original-scale arrays (GluonTS scales internally, and
-    metrics/economic value must be read on the original scale). ``scaler`` is fit on
+    metrics must be read on the original scale). ``scaler`` is fit on
     train only. ``meta`` records everything the comparison must hold fixed.
     """
 

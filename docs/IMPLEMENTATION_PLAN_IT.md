@@ -27,28 +27,28 @@
 ## Parte 1 — Il progetto in una pagina
 
 ### 1.1 Domanda di ricerca (una frase)
-> Un **diffusion model** può produrre **forecast probabilistici** di una serie temporale futura — una *distribuzione* di futuri plausibili invece di un singolo numero — che siano più **accurati**, meglio **calibrati** o più **informativi** rispetto alle baseline classiche e di deep learning, a quale **costo computazionale**, e con quanto **valore economico** (denaro risparmiato quando una decisione reale — programmare una batteria — è guidata dal forecast)?
+> Un **diffusion model** può produrre **forecast probabilistici** di una serie temporale futura — una *distribuzione* di futuri plausibili invece di un singolo numero — che siano più **accurati**, meglio **calibrati** o più **informativi** rispetto alle baseline classiche e di deep learning, e a quale **costo computazionale**?
 
 ### 1.2 Abstract (la versione in 6 frasi)
-Il forecasting reale non è "la domanda di energia elettrica di domani sarà 100"; è "ecco la distribuzione dei domani plausibili". Inquadriamo il forecasting multi-step come l'apprendimento della **distribuzione generativa condizionata** `p(futuro | passato)`, e la realizziamo con un **diffusion model condizionato**, addestrato con lo stesso obiettivo — ELBO (Evidence Lower BOund, limite inferiore dell'evidenza) / predizione del rumore — che il corso ricava nella §11.2. Lo confrontiamo testa a testa con una baseline ingenua, un modello statistico classico (ARIMA/ETS) e un modello probabilistico autoregressivo di deep learning (DeepAR), su un dataset reale multivariato. Valutiamo le **quattro** cose che l'esame premia: **accuratezza puntuale** (MAE/RMSE), **qualità probabilistica** (CRPS, copertura, calibrazione), **costo** (tempo di addestramento/inferenza, e il compromesso qualità-vs-passi di denoising) e **valore economico** — il denaro risparmiato quando una batteria viene programmata sul forecast di ciascun modello, perché una distribuzione meglio calibrata porta a decisioni più economiche e robuste. La nostra tesi è volutamente non trionfalistica: la diffusione regala un'incertezza *più ricca e meglio calibrata*, ma il suo vantaggio dipende dall'orizzonte, dal dataset e da un costo reale di sampling. Il prodotto finale è una presentazione di 8 minuti e un repository pulito che dimostra che abbiamo capito il corso *e* ne abbiamo esteso l'ultimo capitolo in un'applicazione funzionante.
+Il forecasting reale non è "la domanda di energia elettrica di domani sarà 100"; è "ecco la distribuzione dei domani plausibili". Inquadriamo il forecasting multi-step come l'apprendimento della **distribuzione generativa condizionata** `p(futuro | passato)`, e la realizziamo con un **diffusion model condizionato**, addestrato con lo stesso obiettivo — ELBO (Evidence Lower BOund, limite inferiore dell'evidenza) / predizione del rumore — che il corso ricava nella §11.2. Lo confrontiamo testa a testa con una baseline ingenua, un modello statistico classico (ARIMA/ETS) e un modello probabilistico autoregressivo di deep learning (DeepAR), su un dataset reale multivariato. Valutiamo le **tre** cose che l'esame premia: **accuratezza puntuale** (MAE/RMSE), **qualità probabilistica** (CRPS, copertura, calibrazione) e **costo** (tempo di addestramento/inferenza, e il compromesso qualità-vs-passi di denoising). La nostra tesi è volutamente non trionfalistica: la diffusione regala un'incertezza *più ricca e meglio calibrata*, ma il suo vantaggio dipende dall'orizzonte, dal dataset e da un costo reale di sampling. Il prodotto finale è una presentazione di 8 minuti e un repository pulito che dimostra che abbiamo capito il corso *e* ne abbiamo esteso l'ultimo capitolo in un'applicazione funzionante.
 
 ### 1.3 La tesi che difenderemo (la "storia")
 **"Per il forecasting, la domanda giusta non è *cosa* succederà ma *cosa potrebbe* succedere e *quanto ne siamo sicuri*. I diffusion model rispondono nativamente a questa seconda domanda — generano campioni del futuro — ma il premio è la qualità dell'incertezza, non un MAE più basso, e questo premio ha un costo di sampling che possiamo misurare e regolare."**
 
-Questa storia è forte perché è *falsificabile* (forse la diffusione perde — è comunque un risultato), *probabilistica* (vive nel cuore della PML) e *pratica* (il compromesso sul costo è una preoccupazione reale di chi mette in produzione un modello). Ed è *fondata sull'economia*: non ci limitiamo a rivendicare un'incertezza migliore — misuriamo quanto quell'incertezza **vale, in euro**, lasciando che il forecast di ciascun modello programmi una batteria e mettendo un prezzo sulle decisioni che ne risultano (Parte 3.5, §6.4, esperimento E6).
+Questa storia è forte perché è *falsificabile* (forse la diffusione perde — è comunque un risultato), *probabilistica* (vive nel cuore della PML) e *pratica* (il compromesso sul costo è una preoccupazione reale di chi mette in produzione un modello).
 
 ### 1.4 Criteri di successo, mappati sulla griglia di valutazione del professore
 | Criterio di valutazione (dalla descrizione d'esame) | Come il progetto ci si posiziona |
 |---|---|
 | Chiarezza e completezza dell'esposizione | 8 slide essenziali, un solo messaggio ciascuna (Parte 11); un repository pulito; risultati onesti. |
-| **Originalità rispetto ai contenuti del corso** | Estendiamo la §11.2 (diffusione) dalla *generazione non condizionata* al *forecasting condizionato* — esattamente l'impostazione della survey. In più, un'analisi incertezza aleatoria-vs-epistemica (§1.4 qui) che il corso imposta ma non applica alla diffusione. In più, una **valutazione economica orientata alla decisione** (euro risparmiati da una batteria programmata sul forecast di ciascun modello) — che chiude il cerchio dalla probabilità al denaro, cosa che quasi nessun progetto d'esame fa. |
+| **Originalità rispetto ai contenuti del corso** | Estendiamo la §11.2 (diffusione) dalla *generazione non condizionata* al *forecasting condizionato* — esattamente l'impostazione della survey. In più, un'analisi incertezza aleatoria-vs-epistemica (§1.4 qui) che il corso imposta ma non applica alla diffusione. |
 | Comprensione di teoria e pratica | L'intera pipeline è mappata sui capitoli del corso (Parte 2); sappiamo ricavare la loss della diffusione nella notazione del professore; ne abbiamo costruito (almeno una versione giocattolo) noi stessi. |
 | Chiarezza e precisione all'orale | Preparazione orale per persona, con le domande probabili mappate sulle pagine del corso (Parte 11.3). |
 
 ### 1.5 Decisioni di perimetro (fissate, dalle domande di pianificazione)
 - **Tempistiche:** flessibili → il piano è **modulare**, con livelli "fermati-dopo" (Parte 9.4). Ci si può fermare dopo il Livello 0 e avere comunque un progetto completo.
 - **Calcolo:** Colab Pro / GPU (Graphics Processing Unit, unità di elaborazione grafica) a pagamento → modelli del livello di TimeGrad sono fattibili; lo mettiamo a budget (Parte 8.2).
-- **Perimetro:** **bilanciato** → un diffusion model di frontiera + baseline complete + valutazione probabilistica + **un esperimento di robustezza** (cambio di regime) + una **valutazione del valore economico** (dispatch di una batteria) come **quarto pilastro**, realizzata come modulo *sopra i forecast che già produciamo* (nessun addestramento aggiuntivo). Un secondo dataset / un secondo diffusion model sono *facoltativi*, non obbligatori.
+- **Perimetro:** **bilanciato** → un diffusion model di frontiera + baseline complete + valutazione probabilistica + **un esperimento di robustezza** (cambio di regime). Un secondo dataset / un secondo diffusion model sono *facoltativi*, non obbligatori.
 - **Competenze del gruppo:** a proprio agio con Python, nuovi ai framework di deep learning → **prima le librerie** (GluonTS / PyTorchTS / Darts / statsforecast), con un piccolo **DDPM giocattolo scritto da zero** come "artefatto di comprensione" (Parte 5.4). Usiamo le librerie per ottenere risultati e ne leggiamo le interiora per non usarle come scatola nera.
 
 ---
@@ -74,7 +74,6 @@ Questo è l'elemento di differenziazione di maggior valore per il voto. Il corso
 | Baseline DeepAR (verosimiglianza + sampling) | §1.2 (p.3–4); distrib. predittiva §6.5 (p.64) | "Modello a verosimiglianza autoregressiva; le simulazioni Monte-Carlo danno la distribuzione predittiva." |
 | Baseline classica ARIMA/ETS | spazio degli stati ≈ HMM Cap. 5 (p.49); regr. lin. bayesiana Cap. 6 | "Dinamica lineare-gaussiana; intervalli predittivi dal modello di rumore gaussiano." |
 | CRPS / scoring proprio | KL & scoring §2.3 (p.20) | "Il CRPS generalizza il MAE alle distribuzioni; è una regola di scoring propria." |
-| **Valore economico (orientato alla decisione)** | teoria della decisione & perdita attesa §2.3 (p.20); distrib. predittiva §6.5 (p.64) | "Le decisioni ottime usano un *quantile* della distribuzione predittiva; il CRPS = il rimpianto decisionale medio su tutti i rapporti di costo — trasformiamo quel rimpianto in euro programmando una batteria." |
 | (Facoltativo) baseline GP | Cap. 12 Kernels & GP (p.129+, con asterisco) | "Un forecaster pienamente bayesiano con incertezza epistemica — il caso di contrasto." |
 
 > **Sigle sciolte in questa tabella:** MSE (Mean Squared Error, errore quadratico medio); VAE (Variational AutoEncoder, autoencoder variazionale); KL (Kullback–Leibler, la divergenza); MCMC (Markov Chain Monte Carlo, Monte Carlo a catena di Markov); HMM (Hidden Markov Model, modello di Markov nascosto); ARIMA (AutoRegressive Integrated Moving Average); ETS (Error, Trend, Seasonality — lisciamento esponenziale); GP (Gaussian Process, processo gaussiano).
@@ -121,13 +120,6 @@ Stimare e campionare da `p(x_{t+1:t+τ} | x_{t-H+1:t})`. Per la diffusione e Dee
 | Diffusione (TimeGrad) | traiettorie campionate | media/mediana dei campioni | quantili dei campioni |
 
 > **Sigle:** MAE (Mean Absolute Error, errore assoluto medio); RMSE (Root Mean Squared Error, radice dell'errore quadratico medio); CRPS (Continuous Ranked Probability Score, punteggio di probabilità classificato continuo).
-
-### 3.5 Dal forecast alla decisione — valore economico (il 4° pilastro)
-Un forecast ha valore solo se cambia una *decisione*. Il nostro pilastro economico lo rende esplicito con un problema di **programmazione (dispatch) di una batteria (accumulo di energia)**, eseguito sopra i forecast che i modelli già producono:
-- **Stato e controlli.** Una batteria con capacità energetica `E_max`, limite di potenza `P_max`, efficienza di ciclo `η` e stato di carica (state-of-charge) `SoC_t`. A ogni passo scegliamo un'azione di carica/scarica `u_t ∈ [−P_max, P_max]`, mantenendo `SoC` entro `[0, E_max]`.
-- **Obiettivo.** Minimizzare la **bolletta** elettrica sull'orizzonte sotto un prezzo a fasce orarie (time-of-use) `π_t` (più, dove rilevante, un onere di picco/potenza), servendo la serie di carico (e/o fotovoltaico) del dataset.
-- **Decisione sotto incertezza.** Lo schedule è scelto *prima* che il futuro sia noto. Con un forecast **puntuale** si pianifica contro un singolo futuro; con una **distribuzione** (campioni di diffusione / DeepAR) si pianifica contro la *dispersione* — un piccolo **programma lineare (LP)** risolto o sul percorso puntuale (*piano deterministico*) o su `S` traiettorie campionate (*piano stocastico*, approssimazione per media campionaria, SAA).
-- **Valore.** Applichiamo ogni schedule al futuro **vero**, calcoliamo la bolletta realizzata, e definiamo il **denaro risparmiato** = bolletta(modello B) − bolletta(modello A), confrontato con un **oracolo** a previsione perfetta (limite inferiore) e con una baseline ingenua (tetto). Il "valore della distribuzione" stesso = bolletta(piano deterministico dal forecast puntuale) − bolletta(piano stocastico dalla distribuzione completa). Protocollo completo in §6.4; esperimento in E6.
 
 ---
 
@@ -227,7 +219,7 @@ Poiché il gruppo è nuovo ai framework di deep learning e l'orale premia la com
 
 ## Parte 6 — Protocollo di valutazione
 
-La valutazione *è* il rigore del progetto. Misuriamo **quattro** famiglie (puntuale · probabilistica · costo · **valore economico**) + imponiamo igiene statistica.
+La valutazione *è* il rigore del progetto. Misuriamo **tre** famiglie (puntuale · probabilistica · costo) + imponiamo igiene statistica.
 
 ### 6.1 Accuratezza puntuale
 - **MAE**, **RMSE** (sulla **media/mediana** predittiva) e **MASE** (Mean Absolute Scaled Error, errore assoluto scalato medio — adimensionale, permette di confrontare onestamente fra serie/dataset). Facoltativo sMAPE (symmetric Mean Absolute Percentage Error, errore percentuale assoluto medio simmetrico).
@@ -245,20 +237,6 @@ La valutazione *è* il rigore del progetto. Misuriamo **quattro** famiglie (punt
 - **GPU-ore e una stima approssimata in €** (Colab/cloud) — è un'intuizione pratica reale e valutabile.
 - **La curva specifica della diffusione:** qualità (CRPS) vs **numero di passi di denoising `T`** (E3). È qui che la famosa lentezza di sampling della diffusione diventa un *risultato misurato*, legandosi direttamente al limite dichiarato dalla survey.
 
-### 6.4 Valore economico (valutazione orientata alla decisione — il 4° pilastro)
-Questa famiglia risponde a "quanto **vale** il forecast migliore?" trasformando il forecast di ciascun modello in una **decisione di dispatch di una batteria** e mettendole un prezzo. Riusa i forecast di E1 — **nessun addestramento aggiuntivo** — e gira interamente in `src/eval/economic.py`.
-- **Il problema decisionale.** Dato un forecast del carico/prezzo futuro, scegliere uno schedule di carica/scarica `u_{1:τ}` per una batteria (`E_max, P_max, η, SoC`) che minimizzi la **bolletta** elettrica sotto un prezzo a fasce orarie (time-of-use) `π_t` (facoltativo un onere di picco/potenza). Lo schedule è un piccolo **programma lineare (LP)** — convesso, risolto in millisecondi con `cvxpy`/`PuLP`.
-- **Due piani per modello.**
-  - *Piano deterministico:* si dà all'LP il forecast **puntuale** (media/mediana predittiva) → uno schedule.
-  - *Piano stocastico:* si dà all'LP la **distribuzione intera** — `S` traiettorie campionate — e si minimizza la bolletta *attesa* (**approssimazione per media campionaria, SAA**) → uno schedule coperto contro la dispersione. Solo i modelli probabilistici (DeepAR, TimeGrad, naive-bootstrap) possono produrlo; quell'asimmetria è esattamente il punto.
-- **Costo realizzato e denaro risparmiato.** Applichiamo ogni schedule al futuro **vero** e calcoliamo la bolletta realizzata. Poi:
-  - **denaro risparmiato vs naive** = bolletta(piano naive) − bolletta(piano modello) — la cifra in € di punta per modello;
-  - **valore della distribuzione** = bolletta(piano deterministico) − bolletta(piano stocastico) per lo *stesso* modello — quanto vale l'incertezza in sé;
-  - confronto di entrambi con un **oracolo** a previsione perfetta (futuro vero nell'LP → limite inferiore sulla bolletta) e con la baseline naive (tetto), così ogni numero è una frazione del risparmio *ottenibile*, non un assoluto che ne nasconde la scala.
-- **Perché è la stessa probabilità, in euro.** Le decisioni ottime di accumulo usano un **quantile** della distribuzione predittiva, non la sua media (caricare troppo/troppo poco costa in modo asimmetrico — una struttura da *newsvendor*, il problema del giornalaio). Il CRPS *è* la pinball/quantile loss media su tutti i livelli di quantile, cioè il rimpianto decisionale medio su tutti i rapporti di costo — quindi un CRPS più basso dovrebbe *predire* una bolletta più bassa. E6 verifica se è davvero così, su denaro vero.
-- **Fallback (se l'LP/MPC risulta pesante).** Si sostituisce l'LP multi-step con una regola **newsvendor** per singolo passo (quantile ottimo in forma chiusa dato il rapporto di costo) — stessa storia economica, ~20 righe, nessun solver. Documentato in E6.
-- **Libreria:** `cvxpy` (o `PuLP`) per l'LP; tutto il resto è NumPy sugli array di campioni che già abbiamo.
-
 ### 6.5 Igiene statistica (non saltarla — è originalità a basso costo)
 - **≥3 seed casuali** per ogni modello appreso; riporta **media ± deviazione standard**, non singole esecuzioni.
 - Split, scaling, `H`, `τ` e finestre di test **identici** fra tutti i modelli.
@@ -266,7 +244,7 @@ Questa famiglia risponde a "quanto **vale** il forecast migliore?" trasformando 
 - **Regole di equità:** le metriche puntuali si calcolano dalla media predittiva per *tutti* i modelli; mai confrontare una diffusione messa a punto con una baseline non messa a punto; mai scegliere l'orizzonte migliore a posteriori.
 
 ### 6.6 Trappole di valutazione da cui guardarsi attivamente
-Leakage di look-ahead · scaling addestrato sul test · leakage da finestra a cavallo · confronto iniquo fra modelli distribuzionali e puntuali · cherry-picking dell'orizzonte/seed favorevole · riportare il CRPS senza dire se è CRPS-sum o medio · (economico) usare lo stesso percorso di prezzo per *sia* tarare *sia* valutare lo schedule, o citare € assoluti senza la cornice oracolo/naive. Mettile nella checklist di code-review (Parte 8.6).
+Leakage di look-ahead · scaling addestrato sul test · leakage da finestra a cavallo · confronto iniquo fra modelli distribuzionali e puntuali · cherry-picking dell'orizzonte/seed favorevole · riportare il CRPS senza dire se è CRPS-sum o medio. Mettile nella checklist di code-review (Parte 8.6).
 
 ---
 
@@ -308,16 +286,6 @@ Ogni esperimento dichiara un'**ipotesi**, un **setup**, **cosa variamo/misuriamo
 - **Misura:** calo di CRPS & copertura, da train a shift; quale modello mantiene onesti gli intervalli.
 - **Artefatto:** un grafico di calibrazione prima/dopo + una tabella di degrado.
 
-### E6 — Valore economico / dispatch di una batteria (il 4° pilastro) ← Livello 1
-- **Ipotesi:** una batteria programmata su un forecast **probabilistico** realizza una **bolletta più bassa** di una programmata su un forecast **puntuale** — e un forecast meglio calibrato (CRPS più basso) compra più risparmio. Cioè *incertezza migliore = denaro vero*.
-- **Setup:** riusa i forecast di **E1** (nessun riaddestramento). Per ogni modello costruisci (i) uno schedule LP *deterministico* dal forecast puntuale e (ii) uno schedule LP *stocastico* (SAA) dalle sue traiettorie campionate. Fissa una specifica di batteria (`E_max, P_max, η`) e un prezzo a fasce orarie `π_t`; applica ogni schedule al futuro **vero**. Calcola le bollette realizzate contro un **oracolo** (LP a previsione perfetta, limite inferiore) e il piano **naive** (tetto).
-- **Misura:** **bolletta (€)** per modello; **denaro risparmiato vs naive**; **valore della distribuzione** = bolletta(deterministico) − bolletta(stocastico) per lo stesso modello; **risparmio come frazione del risparmio ottenibile dall'oracolo**. Poi **correla il CRPS (da E1) col risparmio realizzato** fra i modelli — la battuta finale che lega il pilastro probabilistico agli euro.
-- **Varia (sweep economici sui dati esistenti):** l'**asimmetria di costo** (forbice del prezzo / peso dell'onere di potenza) — il quantile newsvendor si sposta, e la distribuzione dovrebbe aiutare *di più* al crescere dell'asimmetria; facoltativo la dimensione della batteria `E_max`.
-- **Supporta la tesi se:** lo stocastico ≥ il deterministico sulla bolletta realizzata, il divario si allarga con l'asimmetria di costo, e i modelli con CRPS più basso risparmiano più €.
-- **Smentisce/complica se:** il forecast puntuale programma altrettanto a buon mercato (es. prezzo troppo piatto, batteria troppo piccola) — *anch'esso un risultato pulito e onesto* ("qui la distribuzione non valeva il prezzo, ed ecco il regime in cui lo varrebbe").
-- **Fallback:** se l'LP/MPC è pesante, usa la regola **newsvendor** per singolo passo (quantile ottimo in forma chiusa) — stessa storia, nessun solver.
-- **Artefatto:** un **grafico a barre del denaro risparmiato** (€ per modello, con le cornici oracolo/naive) + un grafico a linee **risparmio-vs-asimmetria-di-costo** + uno scatter **CRPS-vs-€-risparmiati**.
-
 ### E5 — Generalità (facoltativo, Livello 2)
 - **O** un secondo dataset (la storia di E1 regge?) **o** un secondo diffusion model (CSDI) **o** il contrasto con il GP sull'incertezza epistemica.
 - **Artefatto:** una tabella "generalizza?" o la figura della scomposizione dell'incertezza.
@@ -340,11 +308,11 @@ pml-diffusion-tsf/
 ├── src/
 │   ├── data/                 # loader, splitting, scaling, finestratura, manifest
 │   ├── models/               # wrapper sottili: naive, arima, deepar, timegrad, toy_ddpm
-│   ├── eval/                 # metriche (CRPS, copertura, calibrazione), economic.py (dispatch batteria), runner
+│   ├── eval/                 # metriche (CRPS, copertura, calibrazione), runner
 │   ├── viz/                  # plotting coerente (forecast, intervalli, curve)
 │   └── utils/                # seed, logging, timing, caricamento config
 ├── notebooks/                # esplorazione + il notebook didattico del toy-DDPM
-├── experiments/              # script d'ingresso: run_E0.py ... run_E4.py, run_E6.py (economico)
+├── experiments/              # script d'ingresso: run_E0.py ... run_E4.py
 ├── results/                  # CSV (il registro dei risultati) — committati
 ├── figures/                  # grafici generati per le slide — committati
 └── runs/                     # checkpoint, log — esclusi da git (gitignore)
@@ -385,7 +353,7 @@ Il lavoro è diviso in **tre passi fondamentali e isolati** (le unità-tempo del
 ### Ruoli (ciascuno possiede una fetta verticale da capo a fondo, così ognuno sa rispondere all'orale)
 - **Persona A — Responsabile Baseline & Statistica:** M0, M1, la narrativa classica/statistica-PML, le metriche puntuali.
 - **Persona B — Responsabile Diffusione & Infrastruttura:** M2, M3, il DDPM giocattolo, Colab/addestramento, le config.
-- **Persona C — Responsabile Valutazione, Visualizzazione & Storia:** CRPS/copertura/calibrazione, il **modulo del valore economico** (`src/eval/economic.py`, dispatch della batteria, E6), tutte le figure, la narrativa delle slide, il repertorio di domande orali. *(La Persona A co-possiede l'economia della tariffa/segnale di prezzo e l'inquadramento newsvendor, essendo il lato teoria-della-decisione della narrativa classica.)*
+- **Persona C — Responsabile Valutazione, Visualizzazione & Storia:** CRPS/copertura/calibrazione, tutte le figure, la narrativa delle slide, il repertorio di domande orali.
 Tutti leggono la Parte 2 (la spina dorsale) — l'orale valuta i singoli.
 
 ### Passo 1 — Capire, restringere, formalizzare *(chiudi quando sai dire il progetto in 30 secondi)*
@@ -399,12 +367,12 @@ Tutti leggono la Parte 2 (la spina dorsale) — l'orale valuta i singoli.
 
 ### Passo 2 — Costruire la pipeline & eseguire gli esperimenti *(chiudi quando E0+E1 sono verdi sul dataset primario)*
 - **Obiettivo:** produrre risultati quantitativi solidi.
-- **Definizione di fatto:** E0 passa; tabella E1 completa con ≥3 seed; curva del compromesso E3 fatta; **E6 (valore economico) eseguito sui forecast di E1**; E4 tentato; tutte le figure generate da script.
+- **Definizione di fatto:** E0 passa; tabella E1 completa con ≥3 seed; curva del compromesso E3 fatta; E4 tentato; tutte le figure generate da script.
 - **Per persona:**
-  - A: M0 + M1 funzionanti e valutati; tabelle delle metriche puntuali; figura diagnostica dei residui; co-costruisci la tariffa/segnale di prezzo + l'inquadramento newsvendor per E6.
+  - A: M0 + M1 funzionanti e valutati; tabelle delle metriche puntuali; figura diagnostica dei residui.
   - B: M2 (DeepAR) + M3 (TimeGrad) in addestramento su Colab; il DDPM giocattolo; lo sweep E3; checkpoint salvati.
-  - C: il modulo di valutazione (CRPS/copertura/calibrazione) + il **modulo del valore economico** (`economic.py`: LP della batteria, piani deterministico vs stocastico, E6) + il runner della tabella-madre; tutti i grafici di confronto/intervalli/calibrazione e le figure denaro-risparmiato / CRPS-vs-€; tieni pulito il registro.
-- **Artefatti in uscita:** `results/registry.csv` popolato · tabella-madre · grafici forecast/intervalli · curva E3 · **grafico denaro-risparmiato E6 + scatter CRPS-vs-€** · (degrado E4).
+  - C: il modulo di valutazione (CRPS/copertura/calibrazione) + il runner della tabella-madre; tutti i grafici di confronto/intervalli/calibrazione; tieni pulito il registro.
+- **Artefatti in uscita:** `results/registry.csv` popolato · tabella-madre · grafici forecast/intervalli · curva E3 · (degrado E4).
 
 ### Passo 3 — Interpretare, scrivere la storia, preparare l'orale *(chiudi quando la presentazione di 8 minuti + il repertorio orale sono pronti)*
 - **Obiettivo:** trasformare le tabelle in un argomento di 8 minuti e nella prontezza orale individuale.
@@ -412,14 +380,14 @@ Tutti leggono la Parte 2 (la spina dorsale) — l'orale valuta i singoli.
 - **Per persona:**
   - A: le slide baseline/statistica + il punto di onestà "la baseline è davvero battuta?"; risposte orali ARIMA↔spazio-degli-stati.
   - B: la slide sul meccanismo della diffusione (forward/reverse/loss nella notazione degli appunti) + la storia del costo E3; risposte orali sulla diffusione (ricavare la loss).
-  - C: l'arco narrativo, le slide risultati & calibrazione, la **slide del valore economico (€ risparmiati programmando una batteria sul forecast di ciascun modello)**, la slide sulla scomposizione dell'incertezza (§2.3); prove + cronometraggio; assembla il repertorio orale.
+  - C: l'arco narrativo, le slide risultati & calibrazione, la slide sulla scomposizione dell'incertezza (§2.3); prove + cronometraggio; assembla il repertorio orale.
 - **Artefatti in uscita:** `slides.pdf` · `speaker_notes.md` · `oral_qa.md` · repo rifinito.
 
 ### 9.4 Livelli modulari "fermati-dopo" (perché la tempistica è flessibile)
 | Livello | Contiene | È un progetto coerente da solo? |
 |---|---|---|
 | **Livello 0 — MVP** | Passi 1–2 parziali: E0 + E1 (M0–M3) su un dataset; slide di base | **Sì** — uno studio di confronto completo. |
-| **Livello 1 — Obiettivo (il tuo "bilanciato")** | + E3 (passi vs costo) + E4 (cambio di regime) + calibrazione + **E6 (valore economico / dispatch batteria)** | Sì, e chiaramente forte per l'esame. |
+| **Livello 1 — Obiettivo (il tuo "bilanciato")** | + E3 (passi vs costo) + E4 (cambio di regime) + calibrazione | Sì, e chiaramente forte per l'esame. |
 | **Livello 2 — Allungo** | + E2 sweep completo, E5 (2° dataset / CSDI / GP), approfondimento del toy-DDPM, figura della scomposizione dell'incertezza | Sì, competitivo per la *lode*. |
 
 > **Sigla:** MVP (Minimum Viable Product, prodotto minimo funzionante).
@@ -437,8 +405,6 @@ Punta prima al Livello 0; *poi* sali. Non lasciare mai il Livello 0 a metà per 
 | Leakage dei dati (scaling/finestra) | Media | Alto | loader centrale; checklist di review (8.6); manifest delle date di split | A/C |
 | Sforamento di calcolo / € | Media | Medio | itera su Exchange; cache; limita i seed a 3; prima i modelli economici | B |
 | Allargamento del perimetro (inseguire il Livello 2 presto) | Alta | Medio | imponi i cancelli di livello (9.4); MVP prima dell'allungo | tutti |
-| LP/MPC economico (E6) troppo pesante o capriccioso | Media | Medio | una specifica di batteria fissa + un solo prezzo a fasce; l'LP convesso si risolve in ms; **ripiego sul newsvendor per singolo passo in forma chiusa** (nessun solver) — stessa storia | C/A |
-| E6 mostra "la distribuzione non vale" (prezzo piatto / batteria minuscola) | Media | Basso | riformula come risultato onesto; fai lo sweep dell'asimmetria di costo per esporre il regime in cui *paga* | C |
 | L'orale espone una comprensione superficiale | Media | Alto | la spina dorsale (Parte 2) + il DDPM giocattolo + il repertorio orale per persona | tutti |
 | Una persona diventa un collo di bottiglia | Media | Medio | fette verticali (ciascuno possiede un percorso eseguibile); sincronizzazione settimanale | tutti |
 
@@ -448,7 +414,7 @@ Punta prima al Livello 0; *poi* sali. Non lasciare mai il Livello 0 a metà per 
 
 ## Parte 11 — Prodotti finali
 
-### 11.1 La presentazione di 8 minuti (≈9–10 slide, un messaggio ciascuna; se il tempo stringe, fondi la slide 8 del valore economico nella slide 9 di discussione)
+### 11.1 La presentazione di 8 minuti (≈8–9 slide, un messaggio ciascuna)
 1. **Problema** — "forecasting = futuri plausibili, non un numero." (il gancio)
 2. **Inquadramento PML** — `p(y_futuro | x_passato)`; generativo + probabilistico; aleatoria vs epistemica.
 3. **Idea della diffusione** — futuro vero → aggiungi rumore → impara a denoisare *condizionando sul passato* → campiona traiettorie. (uno schema pulito)
@@ -456,9 +422,8 @@ Punta prima al Livello 0; *poi* sali. Non lasciare mai il Livello 0 a metà per 
 5. **Setup sperimentale** — dataset, `H`, `τ`, split temporale, la scala dei modelli.
 6. **Risultato principale (E1)** — la tabella: MAE/RMSE · CRPS · copertura · costo. Più un grafico forecast-con-intervalli.
 7. **L'intuizione specifica della diffusione (E3, +E4)** — compromesso qualità-vs-passi-di-denoising; (calibrazione al cambio di regime).
-8. **Valore economico (E6)** — "quanto *vale* un'incertezza migliore?" il grafico a barre del denaro risparmiato programmando una batteria sul forecast di ciascun modello, con la cornice oracolo/naive, e la battuta finale CRPS-vs-€-risparmiati. *(Il pilastro che trasforma la probabilità in denaro — la slide che colpisce.)*
-9. **Discussione** — quando la diffusione vince / perde; quale incertezza catturiamo e ci sfugge; la riserva sul costo.
-10. **Conclusione** — "incertezza più ricca e meglio calibrata, a un costo di sampling regolabile; utile quando l'incertezza conta — e sappiamo dare un prezzo a quanto è utile." + lavori futuri (diffusione bayesiana/a ensemble).
+8. **Discussione** — quando la diffusione vince / perde; quale incertezza catturiamo e ci sfugge; la riserva sul costo.
+9. **Conclusione** — "incertezza più ricca e meglio calibrata, a un costo di sampling regolabile; utile quando l'incertezza conta." + lavori futuri (diffusione bayesiana/a ensemble).
 - **Deliberatamente NON mostrato:** ogni ablazione, ogni seed, l'idraulica delle librerie, le esecuzioni fallite. Tieni solo ciò che sostiene la tesi.
 
 ### 11.2 Artefatti di supporto
@@ -475,7 +440,6 @@ Costruisci `oral_qa.md` con risposte che ogni membro sa dare. Domande-seme:
 - *ARIMA come modello probabilistico — assunzioni?* → Cap. 5/6. (A)
 - *Vista score-based & legame con Langevin/MCMC?* → §11.2.5 (p.127), Cap. 8. (B)
 - *Perché il sampling della diffusione è lento; come l'hai misurato/mitigato?* → E3. (B/C)
-- *Come trasformi un forecast in denaro? perché un quantile e non la media?* → teoria della decisione / perdita attesa §2.3 (p.20); newsvendor + LP della batteria, E6. "L'accumulo ottimo usa un quantile fissato dall'asimmetria di costo; il CRPS è la pinball loss media su tutti quei quantili, quindi un CRPS più basso dovrebbe significare una bolletta più bassa — E6 verifica che sia così." (C/A)
 
 ---
 
@@ -490,8 +454,6 @@ Ricorda che il gruppo ha studiato fino al Cap. 5. Il progetto richiede soprattut
 | Paper DeepAR (Salinas et al.) | A/B | Passo 2 | la baseline di deep learning |
 | CRPS / scoring proprio (Gneiting & Raftery '07) | C | Passo 1–2 | correttezza della metrica |
 | §1.1.1 incertezza; Cap. 12 GP (in scorsa) | C | Passo 2–3 | la slide di discussione |
-| Teoria della decisione / perdita attesa §2.3; pinball (quantile) loss & il modello **newsvendor** (giornalaio) | C/A | Passo 2 | il pilastro economico (E6): perché le decisioni ottime usano un quantile, CRPS = pinball loss media |
-| Dispatch di batteria/accumulo come LP (un breve primer su MPC/arbitraggio energetico) | C | Passo 2 | implementare `economic.py` (schedule deterministico vs stocastico SAA) |
 | (facolt.) paper CSDI | B | Passo 3 (Livello 2) | secondo diffusion model |
 
 > **Sigla:** TSF (Time Series Forecasting, forecasting di serie temporali).
@@ -508,7 +470,7 @@ Ricorda che il gruppo ha studiato fino al Cap. 5. Il progetto richiede soprattut
 >
 > **Domanda.** Un diffusion model condizionato può stimare `p(futuro | passato)` — una distribuzione di traiettorie future plausibili — con un'incertezza meglio calibrata rispetto alle baseline classiche e probabilistiche di deep learning, e a quale costo di sampling?
 >
-> **Metodo.** Su un dataset reale multivariato (es. Solar/Electricity) confrontiamo una baseline seasonal-naive, un modello classico (ARIMA/ETS), un modello probabilistico autoregressivo di deep learning (DeepAR) e un diffusion model (TimeGrad), più un piccolo DDPM condizionato scritto da zero a partire dagli Algoritmi della §11.2 per dimostrare la comprensione. Valutiamo l'accuratezza puntuale (MAE/RMSE/MASE), la **qualità probabilistica (CRPS, copertura, calibrazione)**, il **costo computazionale** (incluso un compromesso qualità-vs-passi-di-denoising e un test di robustezza al cambio di regime) e un **valore economico orientato alla decisione** — il denaro risparmiato quando il forecast di ciascun modello programma una batteria contro un prezzo a fasce orarie, confrontato con un oracolo a previsione perfetta.
+> **Metodo.** Su un dataset reale multivariato (es. Solar/Electricity) confrontiamo una baseline seasonal-naive, un modello classico (ARIMA/ETS), un modello probabilistico autoregressivo di deep learning (DeepAR) e un diffusion model (TimeGrad), più un piccolo DDPM condizionato scritto da zero a partire dagli Algoritmi della §11.2 per dimostrare la comprensione. Valutiamo l'accuratezza puntuale (MAE/RMSE/MASE), la **qualità probabilistica (CRPS, copertura, calibrazione)** e il **costo computazionale** (incluso un compromesso qualità-vs-passi-di-denoising e un test di robustezza al cambio di regime).
 >
 > **Legame con il corso.** L'obiettivo di addestramento è la loss di predizione del rumore della §11.2 (un ELBO ri-parametrizzato, §9.2/§10.4.1); il sampling è ancestral sampling sulla catena inversa (§3.3.1); discutiamo anche la vista score-based/Langevin (§11.2.5) e che *tipo* di incertezza — aleatoria vs epistemica (§1.1.1) — il modello cattura.
 >
@@ -526,12 +488,6 @@ Ricorda che il gruppo ha studiato fino al Cap. 5. Il progetto richiede soprattut
 - **Copertura / calibrazione** — gli intervalli al x% contengono la verità il x% delle volte — valutazione (Parte 6).
 - **CRPS-sum** — il CRPS multivariato usato da TimeGrad (somma i canali, poi calcola).
 - **Pinball (quantile) loss** — la perdita asimmetrica il cui minimizzatore è un dato quantile; il CRPS = la sua media su tutti i livelli di quantile — §2.3 (p.20).
-- **Modello newsvendor (del giornalaio)** — il problema decisionale da manuale il cui ottimo è un quantile fissato dal rapporto di costo (costo dell'eccesso vs della carenza) — teoria della decisione §2.3.
-- **Dispatch di batteria / accumulo** — scegliere uno schedule di carica/scarica nel tempo per minimizzare una bolletta, soggetto ai limiti di capacità/potenza/efficienza — E6.
-- **Prezzo a fasce orarie (time-of-use, ToU)** — un prezzo elettrico `π_t` che varia di ora in ora; ciò che rende utile l'arbitraggio con l'accumulo (e il forecasting).
-- **Onere di picco / potenza (demand charge)** — una voce di bolletta proporzionale alla *massima* potenza prelevata nel periodo — premia il taglio dei picchi che il forecast prevede.
-- **SAA (approssimazione per media campionaria)** — approssimare "minimizza il costo atteso" mediando il costo sulle `S` traiettorie future campionate dal modello — il piano stocastico di E6.
-- **Oracolo / rimpianto (regret)** — il costo a previsione perfetta (limite inferiore); rimpianto = costo realizzato − costo oracolo; riportiamo i risparmi come frazione del risparmio ottenibile dall'oracolo.
 
 ## Appendice C — Riferimenti
 - *Diffusion Models for Time Series Forecasting: A Survey*, arXiv:2507.14507 (2025).
@@ -540,10 +496,9 @@ Ricorda che il gruppo ha studiato fino al Cap. 5. Il progetto richiede soprattut
 - Salinas et al., *DeepAR*, Int. J. Forecasting 2020.
 - Ho et al., *Denoising Diffusion Probabilistic Models* (DDPM), NeurIPS 2020.
 - Gneiting & Raftery, *Strictly Proper Scoring Rules*, JASA 2007.
-- Gneiting & Katzfuss, *Probabilistic Forecasting*, Annual Review of Statistics 2014 — valore decisionale dei forecast calibrati.
+- Gneiting & Katzfuss, *Probabilistic Forecasting*, Annual Review of Statistics 2014 — calibrazione e scoring proprio dei forecast probabilistici.
 - Bortolussi, *Appunti del corso di PML* — Cap. 1, 2, 3, 5, 8, 9, 10, 11, 12.
 - Yang et al., *Diffusion Models: A Comprehensive Survey* (2022) — già nella cartella PML.
-- (sfondo per E6) qualunque trattazione standard del problema **newsvendor** e dell'**arbitraggio energetico con batterie / dispatch economico** come programma lineare — per il pilastro del valore decisionale.
 
 ## Appendice D — Schede-dati rapide del dataset (da compilare durante il Passo 1)
 | | primario = ? | iterazione = Exchange | allungo = ? |
@@ -554,8 +509,6 @@ Ricorda che il gruppo ha studiato fino al Cap. 5. Il progetto richiede soprattut
 | H / τ scelti | | / | |
 | idea di cambio-regime (E4) | | | |
 | CRPS-sum pubblicato (target E0) | | | |
-| segnale di prezzo per E6 (tariffa ToU / prezzo di mercato) | | | |
-| specifica batteria per E6 (E_max / P_max / η) | | | |
 
 ---
 
@@ -648,18 +601,6 @@ Sono i modi in cui un esperimento può *sembrare* riuscito ed essere falso. Stam
 3. Misura il *calo* di CRPS e copertura passando normale→spostato, per ogni modello.
 4. Artefatto: un grafico di calibrazione prima/dopo + una tabella di degrado. La storia è "chi mantiene onesti gli intervalli sotto shift?".
 
-#### E.2.4-bis Eseguire E6 (valore economico / dispatch della batteria)
-> Non richiede alcun riaddestramento: gira *sopra* i forecast già salvati in E1. È il pilastro che trasforma la probabilità in euro.
-1. **Fissa la scena economica una volta:** una specifica di batteria (`E_max, P_max, η`) e un prezzo a fasce orarie `π_t` (una tariffa ToU realistica, o un prezzo di mercato orario). Mettili nella config e nell'Appendice D.
-2. **Per ogni modello, costruisci due schedule** in `src/eval/economic.py`:
-   - *deterministico:* dai all'LP il forecast **puntuale** (media/mediana) → uno schedule `u_{1:τ}`;
-   - *stocastico (SAA):* dai all'LP le `S` traiettorie campionate e minimizza la bolletta **attesa** → uno schedule coperto. (Solo i modelli probabilistici possono farlo — è il punto.)
-3. **Applica ogni schedule al futuro vero**, calcola la bolletta realizzata. Calcola anche l'**oracolo** (futuro vero dentro l'LP → limite inferiore) e il piano **naive** (tetto).
-4. **Registra** nel `registry.csv`: bolletta(€) per modello e piano, **denaro risparmiato vs naive**, **valore della distribuzione** (deterministico − stocastico), e la frazione del risparmio ottenibile dall'oracolo.
-5. **Sweep dell'asimmetria di costo:** ripeti variando la forbice del prezzo (o il peso dell'onere di potenza). Atteso: la distribuzione aiuta *di più* quando l'asimmetria cresce.
-6. **Artefatti:** grafico a barre del denaro risparmiato (con cornici oracolo/naive) + linea risparmio-vs-asimmetria + scatter **CRPS(da E1)-vs-€-risparmiati**. Conclusione attesa: un CRPS più basso ⇒ una bolletta più bassa.
-7. **Se l'LP dà problemi:** ripiega sulla regola **newsvendor** per singolo passo (quantile ottimo in forma chiusa dato il rapporto di costo) — stessa storia, ~20 righe, nessun solver.
-
 #### E.2.5 Disciplina trasversale (vale per ogni esperimento)
 - **Una config = una esecuzione:** nessun numero magico nel codice; tutto in YAML (modello, dati, `H`, `τ`, `T`, seed).
 - **Checkpoint salvati su Drive** dopo ogni addestramento, così una disconnessione di Colab non costa un'esecuzione.
@@ -672,6 +613,5 @@ La fase sperimentale è chiusa (Livello 1, il "bilanciato") quando:
 - ☐ E0 è verde e documentato (riga di riproduzione + nota scarti);
 - ☐ la tabella E1 è completa, con media ± deviazione standard su ≥3 seed, generata da script;
 - ☐ esiste la curva del compromesso E3 con un gomito leggibile;
-- ☐ E6 è stato eseguito sui forecast di E1: grafico del denaro risparmiato (con cornici oracolo/naive) + scatter CRPS-vs-€;
 - ☐ E4 è stato tentato, con grafico di calibrazione prima/dopo;
 - ☐ ogni numero in ogni figura è tracciabile fino a una riga di `results/registry.csv` e a una config YAML committata.
