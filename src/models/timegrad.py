@@ -70,6 +70,35 @@ def _import_pts():
     return TimeGradEstimator, Trainer, ListDataset
 
 
+def _patch_predictor_freq_kwarg():
+    """Make GluonTS's ``PyTorchPredictor`` tolerate the legacy ``freq`` kwarg.
+
+    The last PyTorchTS commit compatible with gluonts 0.13 (pinned at ``81be06bcc``)
+    builds its predictor with ``PyTorchPredictor(..., freq=self.freq, ...)``. gluonts
+    0.13 removed ``freq`` from that constructor in its freq-handling refactor, so the
+    call dies with ``TypeError: __init__() got an unexpected keyword argument 'freq'``
+    *after a full training run* — the worst place to fail on a paid GPU. This wraps the
+    constructor to drop a stray ``freq`` (gluonts 0.13 never used it). No-op and
+    idempotent: it does nothing if gluonts still accepts ``freq`` or if already patched.
+    """
+    import inspect
+
+    from gluonts.torch.model.predictor import PyTorchPredictor
+
+    init = PyTorchPredictor.__init__
+    if getattr(init, "_freq_tolerant", False):
+        return  # already patched this session
+    if "freq" in inspect.signature(init).parameters:
+        return  # this gluonts still takes freq — nothing to strip
+
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("freq", None)
+        init(self, *args, **kwargs)
+
+    __init__._freq_tolerant = True
+    PyTorchPredictor.__init__ = __init__
+
+
 @dataclass
 class TimeGradForecaster:
     """A thin, contract-aware wrapper around PyTorchTS ``TimeGradEstimator`` (M3).
@@ -240,6 +269,11 @@ class TimeGradForecaster:
 
         _import_pts()  # surface the clean "heavy group" error before anything else
         import torch
+
+        # pts@81be06bcc builds its predictor with PyTorchPredictor(..., freq=...), a kwarg
+        # gluonts 0.13 dropped; patch it away *before* training so the run that just cost a
+        # GPU hour doesn't die at predictor-construction time. Idempotent + version-safe.
+        _patch_predictor_freq_kwarg()
 
         torch.manual_seed(self.seed)
         np.random.seed(self.seed)
