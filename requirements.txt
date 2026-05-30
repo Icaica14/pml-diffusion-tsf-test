@@ -1,0 +1,44 @@
+# =============================================================================
+# pml-diffusion-tsf — Python dependencies
+# =============================================================================
+# Two environments are planned (see README "Getting started" and plan §8.2):
+#
+#   (1) LIGHT / LOCAL  — data, classical baselines (M0/M1), evaluation, plots.
+#                        Everything below the "light group" runs on a laptop CPU.
+#
+#   (2) HEAVY / COLAB  — DeepAR (M2) and TimeGrad (M3). The PyTorchTS <-> GluonTS
+#                        version combo is fragile; it is pinned separately on the
+#                        GPU box, NOT here, so the light env stays installable.
+#
+# Golden rule: get the whole pipeline green on the small Exchange dataset with the
+# light group first; only then bring up the heavy group on Colab.
+# =============================================================================
+
+# --- light group (local CPU; install this to run the data contract + baselines) ---
+numpy>=1.24,<2.0
+pandas>=2.0
+scipy>=1.10
+scikit-learn>=1.3
+matplotlib>=3.7
+pyyaml>=6.0
+requests>=2.31
+tqdm>=4.66
+statsforecast>=1.7        # M1 — AutoARIMA / AutoETS (Nixtla)
+statsmodels>=0.14         # ADF test, ACF/PACF for EDA + residual diagnostics
+
+# --- notebooks (EDA + the toy-DDPM teaching notebook) ---
+jupyter>=1.0
+ipykernel>=6.29
+
+# --- economic-value pillar (E6 battery dispatch LP; tiny, pure-python solver) ---
+PuLP>=2.7                 # swap for cvxpy if a richer model is needed (plan §6.4)
+
+# =============================================================================
+# --- heavy / Colab group — DO NOT install in the light env (versions fragile) ---
+# These are pinned on the GPU box once a known-good combo is verified (plan §8.2).
+# Left commented so `pip install -r requirements.txt` stays laptop-safe.
+# =============================================================================
+# torch                   # pin to the Colab CUDA build
+# gluonts                 # M2 — DeepAR
+# pytorchts               # M3 — TimeGrad  (pin against the matching gluonts!)
+# --- pinned known-good combo: TBD, record here once verified on Colab ---

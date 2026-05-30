@@ -1,0 +1,32 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# --- Data & training artifacts (never commit large/raw data or checkpoints) ---
+data/raw/
+data/processed/
+runs/
+*.ckpt
+*.pt
+*.pth
+wandb/
+
+# Keep results/ and figures/ committed (small CSVs and plots), but drop heavy stuff:
+results/**/*.parquet
+figures/**/*.gif
+
+# --- Course materials: copyright; the professor's notes must NOT be redistributed ---
+*.pdf
+notes/
+books/
+
+# --- OS / editors ---
+.DS_Store
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,25 @@
+{
+  "dataset": "exchange",
+  "D": 8,
+  "context_H": 60,
+  "horizon_tau": 30,
+  "n_total": 7588,
+  "n_train": 5311,
+  "n_val": 758,
+  "n_test": 1519,
+  "split_ratios": [
+    0.7,
+    0.1,
+    0.2
+  ],
+  "adf_p_levels_median": 0.4116735722670638,
+  "adf_p_logret_max": 0.0,
+  "n_levels_nonstationary": 7,
+  "acf1_levels": 0.9990084919365393,
+  "acf1_returns": -0.10101646445027548,
+  "acf1_squared_returns": 0.41524959579638554,
+  "excess_kurtosis_returns": 601.368431369633,
+  "skew_returns": -3.609866208499055,
+  "peak_vol_nominal_date": "2003-03-19",
+  "peak_vol_split": "train"
+}

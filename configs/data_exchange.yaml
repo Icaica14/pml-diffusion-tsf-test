@@ -1,0 +1,39 @@
+# =============================================================================
+# Exchange — the iteration / "get-it-green-first" dataset (plan §4.2–4.3)
+# =============================================================================
+# 8 currencies vs USD, daily cadence, ~7588 steps. From the LSTNet benchmark
+# (laiguokun), the same split lineage TimeGrad uses. Tiny + fast: we bring the
+# WHOLE pipeline up on Exchange before touching the primary dataset.
+#
+# One config = one run. No magic numbers in code (CONTRIBUTING.md). Every field
+# a model or experiment depends on (H, tau, split, seed, scaling) lives here.
+# =============================================================================
+
+name: exchange
+kind: data
+
+source:
+  # gzipped, comma-separated, header-less; 8 float columns, one row per day.
+  url: "https://raw.githubusercontent.com/laiguokun/multivariate-time-series-data/master/exchange_rate/exchange_rate.txt.gz"
+  raw_dir: "data/raw"
+  filename: "exchange_rate.txt.gz"
+  # The series ships without timestamps. The LSTNet benchmark documents a daily
+  # cadence starting 1990-01-01; we attach a *nominal* DatetimeIndex for calendar
+  # features only (it does not affect the values or the split).
+  freq: "D"
+  start_date: "1990-01-01"
+  n_channels: 8
+
+split:
+  # contiguous, time-ordered, NO shuffling; test is the most-recent slice.
+  ratios: [0.7, 0.1, 0.2]   # train / val / test
+
+window:
+  context_length: 60        # H  — past steps fed to the model
+  horizon: 30               # tau — steps to forecast
+  stride: 1                 # sliding-window step within each split
+
+scaling:
+  method: "standardize"     # per-channel z-score; FIT ON TRAIN ONLY, applied to val/test
+
+seed: 42
