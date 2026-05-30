@@ -44,5 +44,8 @@ ipykernel>=6.29
 # PyPI `pytorchts` is dead (imports a removed gluonts path); install from git master.
 # This combo is INCOMPATIBLE with the M2 combo above — run M3 in its own session.
 # Verified recipe (see notebooks/colab_m3_timegrad.ipynb), requires a runtime restart:
-#   pip install "numpy==1.26.4" "pandas==2.1.4" "gluonts==0.13.7" "holidays<0.40" "pydantic<2"
+#   pip install "numpy==1.26.4" "pandas==2.1.4" "gluonts==0.13.7" "pytorch_lightning" "holidays<0.40" "pydantic<2"
 #   pip install --no-deps git+https://github.com/zalandoresearch/pytorch-ts.git
+# (gluonts 0.13.7's gluonts.torch backend imports pytorch_lightning at module load,
+#  so it must be installed explicitly — pytorch-ts master pulls it in transitively but
+#  we install pts with --no-deps, hence the explicit pin above.)
