@@ -94,6 +94,13 @@ class TimeGradForecaster:
         value — pass it explicitly (runner flag ``--input-size``) to override.
     device : torch device string ("cuda" on Colab GPU, "cpu" on a laptop).
     seed : best-effort determinism seed.
+    train_series_copies : how many times the single multivariate training series is
+        repeated in the GluonTS dataset before training. TimeGrad trains on **one**
+        series; GluonTS ties its ``max_idle_transforms`` guard to ``len(dataset)`` and
+        the instance sampler can draw zero windows on a pass, so a 1-entry dataset
+        aborts with "Reached maximum number of idle transformation calls". Repeating the
+        identical series lifts the guard and feeds the sampler many sources per cycle —
+        same data, just offered repeatedly (see :meth:`_replicate_for_sampler`).
 
     Attributes (set by :meth:`fit`)
     -------------------------------
@@ -122,6 +129,7 @@ class TimeGradForecaster:
     input_size: int | None = None
     device: str = "cuda"
     seed: int = 0
+    train_series_copies: int = 64
     predictor_: object = field(default=None, repr=False)
     input_size_: int | None = field(default=None, repr=False)
 
@@ -186,6 +194,28 @@ class TimeGradForecaster:
         """
         return estimator.train(train_dataset, num_workers=0, prefetch_factor=None)
 
+    def _replicate_for_sampler(self, train_dataset):
+        """Repeat the single multivariate series so GluonTS won't abort training.
+
+        TimeGrad trains on **one** multivariate series. GluonTS ties its
+        ``max_idle_transforms`` guard to ``len(dataset)`` (here 1), while the
+        ``ExpectedNumInstanceSampler`` draws a *random* number of windows per pass and
+        can legitimately return zero; with the guard at 1, two such empty passes abort
+        training with "Reached maximum number of idle transformation calls". Presenting
+        the identical series ``train_series_copies`` times raises the guard to that many
+        and gives the sampler many sources per cycle, so an empty-pass run becomes
+        statistically impossible — **without changing the data the model sees** (the same
+        single series, only offered repeatedly for random-window sampling). As a bonus it
+        makes the ``input_size`` auto-correction reliable: the retry trains instead of
+        tripping this same abort.
+        """
+        k = int(self.train_series_copies)
+        entries = list(getattr(train_dataset, "list_data", []) or [])
+        if k <= 1 or not entries:
+            return train_dataset
+        _, _, ListDataset = _import_pts()
+        return ListDataset(entries * k, freq=self.freq, one_dim_target=False)
+
     # -- fit ------------------------------------------------------------------
     def fit(self, train_dataset) -> "TimeGradForecaster":
         """Train one global TimeGrad on a multivariate GluonTS dataset.
@@ -206,6 +236,10 @@ class TimeGradForecaster:
 
         torch.manual_seed(self.seed)
         np.random.seed(self.seed)
+
+        # Repeat the single multivariate series so GluonTS's idle-transform guard
+        # (tied to len(dataset)=1) cannot abort training on an empty sampler pass.
+        train_dataset = self._replicate_for_sampler(train_dataset)
 
         explicit = self.input_size is not None
         size = int(self.input_size) if explicit else self._guess_input_size()
