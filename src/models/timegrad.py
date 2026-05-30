@@ -210,11 +210,18 @@ class TimeGradForecaster:
         tripping this same abort.
         """
         k = int(self.train_series_copies)
-        entries = list(getattr(train_dataset, "list_data", []) or [])
-        if k <= 1 or not entries:
+        if k <= 1:
             return train_dataset
-        _, _, ListDataset = _import_pts()
-        return ListDataset(entries * k, freq=self.freq, one_dim_target=False)
+        # GluonTS 0.11–0.13's ``ListDataset`` returns a plain *list* of processed
+        # entries (not an object with ``.list_data``), so we materialise and repeat it:
+        # ``k`` identical series lift the ``max_idle_transforms`` guard (which pts ties
+        # to ``len(dataset)``) and give the sampler ``k`` sources per cycle. GluonTS
+        # copies each entry before transforming, so repeating references is safe.
+        try:
+            entries = list(train_dataset)
+        except TypeError:
+            return train_dataset
+        return entries * k if entries else train_dataset
 
     # -- fit ------------------------------------------------------------------
     def fit(self, train_dataset) -> "TimeGradForecaster":
