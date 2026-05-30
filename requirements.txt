@@ -23,15 +23,13 @@ matplotlib>=3.7
 pyyaml>=6.0
 requests>=2.31
 tqdm>=4.66
-statsforecast>=1.7        # M1 — AutoARIMA / AutoETS (Nixtla)
-statsmodels>=0.14         # ADF test, ACF/PACF for EDA + residual diagnostics
+statsmodels>=0.14         # M1 ARIMA (sandbox) + ADF / ACF / PACF for the EDA
+# statsforecast>=1.7      # M1 in the GROUP repo (Nixtla AutoARIMA/AutoETS, pulls numba);
+                          # the sandbox builds M1 on statsmodels to stay light + offline.
 
 # --- notebooks (EDA + the toy-DDPM teaching notebook) ---
 jupyter>=1.0
 ipykernel>=6.29
-
-# --- economic-value pillar (E6 battery dispatch LP; tiny, pure-python solver) ---
-PuLP>=2.7                 # swap for cvxpy if a richer model is needed (plan §6.4)
 
 # =============================================================================
 # --- heavy / Colab group — DO NOT install in the light env (versions fragile) ---
@@ -39,6 +37,7 @@ PuLP>=2.7                 # swap for cvxpy if a richer model is needed (plan §6
 # Left commented so `pip install -r requirements.txt` stays laptop-safe.
 # =============================================================================
 # torch                   # pin to the Colab CUDA build
-# gluonts                 # M2 — DeepAR
+# gluonts                 # M2 — DeepAR  (gluonts.torch backend)
+# lightning               # M2 — DeepAR training (PyTorch Lightning trainer)
 # pytorchts               # M3 — TimeGrad  (pin against the matching gluonts!)
 # --- pinned known-good combo: TBD, record here once verified on Colab ---
