@@ -166,6 +166,33 @@ class ForecastDataset:
         ]
         return ListDataset(entries, freq=freq)
 
+    def to_gluonts_multivariate(self, split: str = "train"):
+        """Build a GluonTS multivariate ``ListDataset`` — **one** entry, target ``(D, L)``.
+
+        Where :meth:`to_gluonts` emits ``D`` independent univariate series (M2 DeepAR
+        models each channel on its own), **M3 TimeGrad models the ``D`` channels
+        *jointly***: its diffusion step denoises the whole ``D``-vector at once, so it
+        needs the multivariate layout GluonTS encodes as a single entry whose ``target``
+        has shape ``(D, L)`` with ``one_dim_target=False``.
+
+        Uses the **raw** (un-scaled) series — TimeGrad/GluonTS scale internally, exactly
+        as in :meth:`to_gluonts`. Import is guarded so the light env needs no GluonTS.
+        """
+        try:
+            from gluonts.dataset.common import ListDataset
+        except ImportError as exc:  # pragma: no cover - heavy/Colab env only
+            raise ImportError(
+                "to_gluonts_multivariate() needs the heavy/Colab group (gluonts). It is "
+                "not installed in the light local env (see requirements.txt)."
+            ) from exc
+
+        arr = self.raw_splits[split]  # (L, D)
+        freq = self.meta["freq"]
+        start = self.meta.get("start_date")
+        target = arr.T.astype("float32")  # (D, L) — channels-first for multivariate
+        entry = {"start": start, "target": target}
+        return ListDataset([entry], freq=freq, one_dim_target=False)
+
     # -- provenance -----------------------------------------------------------
     def manifest(self) -> dict[str, Any]:
         """A JSON-serializable record of how this dataset was built.

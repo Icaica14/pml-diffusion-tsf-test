@@ -36,8 +36,13 @@ ipykernel>=6.29
 # These are pinned on the GPU box once a known-good combo is verified (plan §8.2).
 # Left commented so `pip install -r requirements.txt` stays laptop-safe.
 # =============================================================================
-# torch                   # pin to the Colab CUDA build
-# gluonts                 # M2 — DeepAR  (gluonts.torch backend)
-# lightning               # M2 — DeepAR training (PyTorch Lightning trainer)
-# pytorchts               # M3 — TimeGrad  (pin against the matching gluonts!)
-# --- pinned known-good combo: TBD, record here once verified on Colab ---
+# --- M2 DeepAR (Colab) — modern gluonts, keep Colab's numpy 2.x ---
+# torch                   # Colab's preinstalled CUDA build
+# gluonts[torch]          # M2 — DeepAR  (gluonts.torch backend) + Lightning
+#
+# --- M3 TimeGrad (Colab) — PyTorchTS, a SEPARATE pinned env (numpy 1.x!) ---
+# PyPI `pytorchts` is dead (imports a removed gluonts path); install from git master.
+# This combo is INCOMPATIBLE with the M2 combo above — run M3 in its own session.
+# Verified recipe (see notebooks/colab_m3_timegrad.ipynb), requires a runtime restart:
+#   pip install "numpy==1.26.4" "pandas==2.1.4" "gluonts==0.13.7" "holidays<0.40" "pydantic<2"
+#   pip install --no-deps git+https://github.com/zalandoresearch/pytorch-ts.git
