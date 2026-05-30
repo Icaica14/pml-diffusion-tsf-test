@@ -173,6 +173,19 @@ class TimeGradForecaster:
             ),
         )
 
+    def _train(self, estimator, train_dataset):
+        """Run ``estimator.train`` with a modern-torch-safe DataLoader config.
+
+        PyTorchTS (pinned at the gluonts-0.13-compatible commit, mid-2024) builds its
+        training ``DataLoader`` with ``num_workers=0`` **and** ``prefetch_factor=2``.
+        torch >= 2.0 rejects that pair ("prefetch_factor option could only be specified
+        in multiprocessing"): with ``num_workers=0`` the only legal value is
+        ``prefetch_factor=None``. ``PyTorchEstimator.train`` forwards both kwargs
+        straight through to the DataLoader, so we pass the safe pair here — single
+        process, deterministic, no multiprocessing surprises on Colab.
+        """
+        return estimator.train(train_dataset, num_workers=0, prefetch_factor=None)
+
     # -- fit ------------------------------------------------------------------
     def fit(self, train_dataset) -> "TimeGradForecaster":
         """Train one global TimeGrad on a multivariate GluonTS dataset.
@@ -199,7 +212,7 @@ class TimeGradForecaster:
 
         try:
             estimator = self._build_estimator(size)
-            self.predictor_ = estimator.train(train_dataset)
+            self.predictor_ = self._train(estimator, train_dataset)
         except RuntimeError as exc:
             # torch RNN check: "input.size(-1) must be equal to input_size. Expected X,
             # got Y" — Y is the real feature width. Auto-correct once (unless the caller
@@ -209,7 +222,7 @@ class TimeGradForecaster:
                 raise
             size = int(m.group(1))
             estimator = self._build_estimator(size)
-            self.predictor_ = estimator.train(train_dataset)
+            self.predictor_ = self._train(estimator, train_dataset)
 
         self.input_size_ = size
         return self
