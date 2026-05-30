@@ -74,6 +74,11 @@ class DeepARForecaster:
     num_layers, hidden_size : the LSTM depth / width.
     max_epochs, num_batches_per_epoch, batch_size, lr : the Lightning training budget.
     n_samples : number ``S`` of sampled trajectories drawn per window at predict time.
+    disable_time_features : if ``True``, train DeepAR with ``time_features=[]`` — i.e.
+        with **no** calendar covariates. On Exchange the ``start`` date is nominal
+        (a placeholder 1990-01-01, the series is not truly calendar-aligned), so the
+        default daily time features are spurious noise the model can over-fit. The
+        M2-tuned run sets this to strip them; the M2-baseline run leaves them on.
     seed : seed for ``lightning.seed_everything`` + the sampler (best-effort determinism).
 
     Attributes (set by :meth:`fit`)
@@ -92,6 +97,7 @@ class DeepARForecaster:
     batch_size: int = 32
     lr: float = 1e-3
     n_samples: int = 100
+    disable_time_features: bool = False
     accelerator: str = "auto"  # "auto" uses GPU on Colab, CPU on a laptop
     seed: int = 0
     predictor_: object = field(default=None, repr=False)
@@ -111,6 +117,11 @@ class DeepARForecaster:
             from pytorch_lightning import seed_everything
         seed_everything(self.seed, workers=True)
 
+        # Strip calendar covariates when asked: ``time_features=[]`` tells GluonTS to
+        # build no time features instead of the default daily set. We only pass the
+        # kwarg in that case so the baseline run keeps GluonTS's own defaults untouched.
+        extra_kwargs = {"time_features": []} if self.disable_time_features else {}
+
         estimator = DeepAREstimator(
             freq=self.freq,
             prediction_length=self.horizon,
@@ -127,6 +138,7 @@ class DeepARForecaster:
                 "enable_model_summary": False,
                 "logger": False,
             },
+            **extra_kwargs,
         )
         self.predictor_ = estimator.train(train_dataset)
         return self

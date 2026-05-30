@@ -45,6 +45,10 @@ def main() -> None:
     parser.add_argument("--hidden", type=int, default=40, help="LSTM hidden size.")
     parser.add_argument("--layers", type=int, default=2, help="LSTM layers.")
     parser.add_argument("--samples", type=int, default=100, help="Sampled trajectories per window.")
+    parser.add_argument("--no-time-features", action="store_true",
+                        help="Train DeepAR with time_features=[] (no calendar covariates). "
+                             "On Exchange the start date is nominal, so the default daily "
+                             "time features are spurious; this is the M2-tuned variant.")
     parser.add_argument("--accelerator", default="auto",
                         help="Lightning accelerator: 'auto' (GPU on Colab), 'gpu', or 'cpu'.")
     parser.add_argument("--seed", type=int, default=None, help="Override the config seed.")
@@ -73,6 +77,7 @@ def main() -> None:
         num_batches_per_epoch=args.batches,
         batch_size=args.batch_size,
         n_samples=args.samples,
+        disable_time_features=args.no_time_features,
         accelerator=args.accelerator,
         seed=seed,
     )
@@ -89,10 +94,14 @@ def main() -> None:
     scale = seasonal_naive_scale(ds.raw_splits["train"], season_length=1)
     metrics = evaluate_forecast(te_tgt, point, samples, scale, levels=(0.5, 0.9))
 
+    # Distinct label for the tuned (no-calendar-features) variant so the two DeepAR
+    # rows are unambiguous in the registry / comparison tables.
+    model_name = "deepar_notf" if args.no_time_features else "deepar"
+
     row = {
         "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "dataset": ds.name,
-        "model": "deepar",
+        "model": model_name,
         "split": "test",
         "n_windows": int(te_tgt.shape[0]),
         "H": ds.H,
@@ -111,11 +120,12 @@ def main() -> None:
     append_result(args.registry, row)
 
     # Console summary.
-    print(f"M2 DeepAR  ·  {ds.name}  ·  test split")
+    tf_note = "no time-features (tuned)" if args.no_time_features else "default time-features"
+    print(f"M2 DeepAR ({model_name})  ·  {ds.name}  ·  test split")
     print(f"  windows={row['n_windows']}  H={ds.H}  tau={ds.tau}  D={ds.D}  "
           f"S={args.samples}  seed={seed}")
     print(f"  model   : LSTM layers={args.layers} hidden={args.hidden}  "
-          f"epochs={args.epochs} x {args.batches} batches")
+          f"epochs={args.epochs} x {args.batches} batches  ·  {tf_note}")
     print("  point   : "
           f"MAE={metrics['MAE']:.4f}  RMSE={metrics['RMSE']:.4f}  MASE={metrics['MASE']:.4f}")
     print("  prob    : "
