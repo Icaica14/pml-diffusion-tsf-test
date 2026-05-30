@@ -41,11 +41,14 @@ ipykernel>=6.29
 # gluonts[torch]          # M2 — DeepAR  (gluonts.torch backend) + Lightning
 #
 # --- M3 TimeGrad (Colab) — PyTorchTS, a SEPARATE pinned env (numpy 1.x!) ---
-# PyPI `pytorchts` is dead (imports a removed gluonts path); install from git master.
+# PyPI `pytorchts` is dead (imports a removed gluonts path); install from git.
+# Do NOT use `master`: commit #168 (2024-06-14) bumped PyTorchTS to the gluonts 0.14+
+# import layout (`gluonts.torch.distributions.output`), which 0.13.7 lacks. Pin the
+# PARENT commit 81be06bcc — the last state compatible with gluonts 0.13.7.
 # This combo is INCOMPATIBLE with the M2 combo above — run M3 in its own session.
 # Verified recipe (see notebooks/colab_m3_timegrad.ipynb), requires a runtime restart:
 #   pip install "numpy==1.26.4" "pandas==2.1.4" "gluonts==0.13.7" "pytorch_lightning" "holidays<0.40" "pydantic<2"
-#   pip install --no-deps git+https://github.com/zalandoresearch/pytorch-ts.git
+#   pip install --no-deps git+https://github.com/zalandoresearch/pytorch-ts.git@81be06bcc128729ad8901fcf1c722834f176ac34
 # (gluonts 0.13.7's gluonts.torch backend imports pytorch_lightning at module load,
-#  so it must be installed explicitly — pytorch-ts master pulls it in transitively but
-#  we install pts with --no-deps, hence the explicit pin above.)
+#  so it must be installed explicitly — pytorch-ts pulls it in transitively but we
+#  install pts with --no-deps, hence the explicit pin above.)
