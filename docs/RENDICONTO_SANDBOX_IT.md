@@ -285,39 +285,82 @@ Anche M1 (che avrebbe una predittiva gaussiana in forma chiusa) viene campionato
 
 ## 5.6 Le metriche (con formule e intuizione)
 
-Tutte le metriche sono nel modulo `src/eval/metrics.py` e sono calcolate sulla **scala originale**. Le dividiamo in due famiglie.
+Le metriche sono il **righello** dell'intero confronto: tutto ciò che diremo nei Risultati (§9) e nell'Interpretazione (§10) è *letto attraverso di esse*, perciò vanno capite a fondo quanto i modelli. Sono tutte nel modulo `src/eval/metrics.py` e calcolate sulla **scala originale** (de-standardizzata), così che i numeri siano nelle unità vere e confrontabili.
+
+Una previsione deve rispondere a **due domande diverse**, e servono perciò **due famiglie** di metriche:
+
+1. *"Il tuo numero centrale è vicino alla verità?"* $\to$ **metriche puntuali** (MAE, RMSE, MASE): misurano la **distanza** fra traiettoria prevista e reale.
+2. *"La tua incertezza è onesta?"* $\to$ **metriche probabilistiche** (CRPS, coverage, width, pinball): misurano se la *forma* dell'incertezza è **calibrata** e **affilata**.
+
+Un modello può vincere sulla prima e perdere sulla seconda (o viceversa): è proprio questa dissociazione che rende interessante il confronto, e che un solo numero non saprebbe catturare.
 
 ### Metriche puntuali (giudicano la traiettoria centrale)
 
 Siano $y$ il valore vero e $\hat{y}$ la previsione puntuale, su tutte le posizioni $(N \text{ finestre} \times \tau \text{ passi} \times D \text{ canali})$.
 
-- **MAE** (*Mean Absolute Error*, errore assoluto medio): $\;\mathrm{MAE} = \mathrm{media}\,|y - \hat{y}|$. Distanza $L_1$ media; robusta agli *outlier*.
-- **RMSE** (*Root Mean Squared Error*, radice dell'errore quadratico medio): $\;\mathrm{RMSE} = \sqrt{\mathrm{media}\,(y-\hat{y})^2}$. Penalizza di più i grandi errori (utile data la presenza di *jump* estremi).
+- **MAE** (*Mean Absolute Error*, errore assoluto medio): $\;\mathrm{MAE} = \mathrm{media}\,|y - \hat{y}|$. La distanza $L_1$ media fra previsione e verità, nelle **stesse unità dei dati**. Pesa ogni errore in proporzione alla sua dimensione (un errore doppio pesa il doppio), quindi è **robusta** agli *outlier*: un singolo *jump* estremo non la domina.
+- **RMSE** (*Root Mean Squared Error*, radice dell'errore quadratico medio): $\;\mathrm{RMSE} = \sqrt{\mathrm{media}\,(y-\hat{y})^2}$. Eleva al quadrato gli errori prima di mediarli, quindi **penalizza i grandi errori molto più dei piccoli** (un errore doppio pesa quattro volte): utile quando i grandi sbagli costano in modo sproporzionato. Una proprietà comoda: vale sempre $\mathrm{RMSE} \geq \mathrm{MAE}$, e **quanto più ampio è il divario, tanto più gli errori sono *variabili*** (pochi grandi sbagli fra tanti piccoli); se $\mathrm{RMSE} \approx \mathrm{MAE}$ gli errori sono di taglia uniforme. Su Exchange, ricco di *jump* estremi (EDA #4), il divario è informativo.
 - **MASE** (*Mean Absolute Scaled Error*, errore assoluto scalato): il MAE diviso per la "difficoltà naive" della serie, stimata sul train. Formalmente, detta $\text{scale}_d$ la media in-sample dell'errore naive a 1 passo sul canale $d$,
 $$
 \text{scale}_d = \mathrm{media}_{t}\,\big|x_{t,d} - x_{t-1,d}\big| \quad (\text{sul train}),
 \qquad
 \mathrm{MASE} = \mathrm{media}\,\frac{|y-\hat{y}|}{\text{scale}_d}.
 $$
-Il senso del MASE è rendere l'errore **confrontabile fra canali** di magnitudine diversa, dividendo per quanto è "difficile" quel canale per un naive a 1 passo.
+Il MASE nasce (Hyndman & Koehler 2006) per un problema concreto del nostro caso **multivariato**: gli 8 canali hanno magnitudini diverse, quindi un MAE "grezzo" sarebbe dominato dai canali con i numeri più grandi. Dividendo l'errore di ciascun canale per la sua **difficoltà naive** (quanto sbaglia, su quel canale, l'ingenuo "domani = oggi" a 1 passo, misurato sul *train*), il MASE diventa **adimensionale**, quindi **confrontabile e mediabile fra canali**. Scegliamo $m = 1$ (naive a 1 passo, cioè la persistenza) perché su Exchange non c'è stagionalità di calendario (EDA #5): un naive stagionale non avrebbe senso.
 
   > **Attenzione a un punto che genera confusione** (e che useremo in §10): il denominatore è l'errore naive a **1 passo** *in-sample*, mentre il numeratore è l'errore di previsione su orizzonte **$\tau = 30$ passi** *out-of-sample*. Su un random walk l'errore a $h$ passi cresce come $\sqrt{h}$: quindi **anche la persistenza M0 avrà MASE ben $> 1$** (circa $\sqrt{\text{orizzonte medio}}$). Qui MASE **non** va letto come "batte il naive se $<1$": va letto come **indice relativo fra i nostri modelli** (più basso = meglio), tutti valutati sullo stesso orizzonte lungo.
+
+### Intermezzo: cosa rende *onesta* una metrica probabilistica
+
+Prima di definire le metriche probabilistiche serve un concetto-chiave: la ***proper scoring rule*** (regola di punteggio "propria"). Una metrica $S(F, y)$ che valuta una distribuzione prevista $F$ contro l'osservazione reale $y$ (più bassa = meglio, la trattiamo come una *loss*) si dice **propria** se il punteggio atteso è **minimizzato dichiarando la distribuzione vera**: se i dati seguono davvero $G$, allora fra tutte le $F$ possibili è $F = G$ a ottenere il punteggio medio migliore. È **strettamente propria** se quel minimo è *unico*.
+
+Perché ci interessa? Perché una *proper scoring rule* **non premia chi bara**: il forecaster non ha alcun incentivo a gonfiare o sgonfiare artificialmente la propria incertezza per fare bella figura — la strategia ottima è **riportare ciò in cui crede davvero**. **CRPS** e **pinball loss** sono proprie: per questo sono le nostre metriche-cardine.
+
+Per contro, la **coverage da sola *non* è propria**: la si "vince" banalmente con intervalli larghissimi (copro il 100 % con una banda da $-\infty$ a $+\infty$). Per questo va sempre letta **insieme** alla **width** (affilatezza). È il principio-guida della valutazione probabilistica (Gneiting et al. 2007): **"massimizza l'affilatezza *subordinatamente* alla calibrazione"** — rendi la distribuzione la più stretta possibile, *ma solo* restando onesta sulla copertura. Il CRPS è il modo di compattare questo compromesso in un unico numero proprio.
 
 ### Metriche probabilistiche (giudicano l'intera distribuzione)
 
 Stimate dall'ensemble di $S=100$ campioni.
 
-- **CRPS** (*Continuous Ranked Probability Score*): è **la generalizzazione del MAE alle distribuzioni**. Per una previsione degenere (tutti i campioni uguali) si riduce esattamente a $|x - y|$; in generale premia le distribuzioni **calibrate** *e* **affilate**. Usiamo lo stimatore d'ensemble *fair / almost-unbiased* (Zamo & Naveau 2018), che corregge la distorsione dei piccoli ensemble:
+- **CRPS** (*Continuous Ranked Probability Score*): la metrica-bersaglio del progetto. La sua definizione canonica misura la distanza fra la **funzione di ripartizione** (*Cumulative Distribution Function*, CDF) prevista $F$ e quella "perfetta" che salta da 0 a 1 esattamente nel valore vero $y$:
 $$
-\mathrm{CRPS} \;=\; \frac{1}{S}\sum_{i=1}^{S} |x_i - y| \;-\; \frac{1}{S(S-1)}\sum_{i=1}^{S} (2i - S - 1)\,x_{(i)},
+\mathrm{CRPS}(F, y) = \int_{-\infty}^{+\infty} \big(F(z) - \mathbf{1}\{z \geq y\}\big)^2 \, dz,
 $$
-dove $x_{(i)}$ sono i campioni ordinati in modo crescente. Il primo termine misura quanto i campioni sono **vicini alla verità** (accuratezza); il secondo, $\approx \tfrac12\,\mathbb{E}|X-X'|$, misura quanto i campioni sono **dispersi fra loro** (penalità per la non-affilatezza). **Più basso è meglio.** È la nostra metrica-bersaglio.
+dove $\mathbf{1}\{\cdot\}$ è la funzione indicatrice. A parole: **quanto è "spalmata" la CDF prevista rispetto a un gradino netto sulla verità**. Ha tre proprietà che la rendono ideale: è **propria** (vedi intermezzo); è nelle **stesse unità dei dati** (come il MAE, quindi interpretabile); e per una previsione **degenere** (tutti i campioni in un punto) si **riduce esattamente al MAE** $|x - y|$ — per questo si dice che il CRPS *generalizza il MAE alle distribuzioni*.
 
-- **Coverage** (copertura empirica): la frazione di volte in cui la verità cade dentro l'intervallo predittivo centrale a livello nominale (50 % e 90 %). Leggiamo gli estremi dell'intervallo come quantili dell'ensemble. Confronto col nominale: **sopra** $\to$ modello *under-confident* (bande troppo larghe); **sotto** $\to$ *over-confident* (bande troppo strette). È la misura diretta della **calibrazione**.
+  Equivalentemente vale la forma "a energia" $\mathrm{CRPS} = \mathbb{E}|X - y| - \tfrac{1}{2}\mathbb{E}|X - X'|$ (con $X, X'$ campioni indipendenti dalla previsione): il **primo termine premia l'accuratezza** (campioni vicini alla verità), il **secondo premia l'affilatezza** (campioni poco dispersi fra loro). Dall'ensemble lo stimiamo con la versione *fair / almost-unbiased* (Zamo & Naveau 2018), che corregge la distorsione dei piccoli ensemble:
+$$
+\widehat{\mathrm{CRPS}} \;=\; \frac{1}{S}\sum_{i=1}^{S} |x_i - y| \;-\; \frac{1}{S(S-1)}\sum_{i=1}^{S} (2i - S - 1)\,x_{(i)},
+$$
+con $x_{(i)}$ i campioni ordinati in modo crescente (è il fattore $S-1$ invece di $S$ a togliere il *bias* a $S$ finito). **Più basso è meglio**: il CRPS è la nostra sintesi unica di calibrazione *e* affilatezza, ed è il numero che guarderemo per primo nel §9.
 
-- **Width** (ampiezza media dell'intervallo): la **sharpness**. Va letta *insieme* alla coverage: l'obiettivo è la **minima width che mantiene la coverage nominale**. Una banda larga ottiene coverage facilmente ma è poco informativa.
+- **Coverage** (copertura empirica): misura diretta della **calibrazione**. È la frazione di volte in cui la verità cade dentro l'intervallo predittivo centrale al livello nominale (50 % e 90 %), letto come quantili dell'ensemble. Si confronta col nominale: **uguale** $\to$ ben calibrato; **sotto** $\to$ *over-confident* (bande troppo strette, incertezza sottostimata — il difetto **pericoloso**, perché illude di sapere più di quanto si sa); **sopra** $\to$ *under-confident* (bande troppo larghe, prudenti). Come visto nell'intermezzo, **non basta da sola**.
 
-- **Pinball loss** (*quantile loss*): la perdita la cui minimizzazione restituisce un dato quantile; mediata su una griglia fitta di quantili approssima **metà del CRPS** ($2 \times \text{pinball} \approx \text{CRPS}$). La riportiamo come **controllo di coerenza**: se pinball e CRPS raccontano storie diverse, c'è un bug.
+- **Width** (ampiezza media dell'intervallo): misura diretta dell'**affilatezza** (*sharpness*). È il complemento obbligatorio della coverage: l'obiettivo non è "coprire", ma trovare la **banda più stretta che mantiene ancora la copertura nominale**. Due modelli con la stessa coverage si distinguono proprio sulla width (più stretta = più informativa).
+
+- **Pinball loss** (*quantile loss*, perdita "a pinball"): la *loss* la cui minimizzazione, per un dato livello $q$, restituisce esattamente il **$q$-esimo quantile**; penalizza in modo **asimmetrico** sotto- e sovra-previsione (peso $q$ da un lato, $1 - q$ dall'altro). È anch'essa una *proper scoring rule*. La mediamo su una griglia fitta di quantili: poiché $\mathrm{CRPS} = 2\int_0^1 \rho_q\, dq$, questa media **approssima metà del CRPS**, cioè $2 \times \text{pinball} \approx \mathrm{CRPS}$. La riportiamo come **controllo di coerenza**: se pinball e CRPS raccontassero storie diverse, sapremmo che c'è un bug nel calcolo (nei nostri risultati concordano sempre).
+
+### Riepilogo delle metriche
+
+| Metrica | Cosa misura | Famiglia | Direzione | Unità | Propria? |
+|---|---|---|---|---|---|
+| MAE | distanza media dalla verità | puntuale | più basso = meglio | dati | — |
+| RMSE | distanza, pesando i grandi errori | puntuale | più basso = meglio | dati | — |
+| MASE | errore scalato sulla difficoltà naive | puntuale | più basso = meglio | adimensionale | — |
+| CRPS | calibrazione **e** affilatezza, in un numero | probabilistica | più basso = meglio | dati | sì |
+| coverage | calibrazione (la verità è nell'intervallo?) | probabilistica | vicino al nominale | frazione | no (da sola) |
+| width | affilatezza (quanto è stretta la banda) | probabilistica | più basso = meglio *se* la coverage tiene | dati | no (da sola) |
+| pinball | come CRPS, su una griglia di quantili | probabilistica | più basso = meglio | dati | sì |
+
+### Come leggere i numeri (guida rapida al §9)
+
+Per evitare letture affrettate, l'ordine in cui guardare la tabella dei risultati:
+
+1. **CRPS** per primo: è la sintesi probabilistica propria, stabilisce la classifica "onesta" sull'incertezza.
+2. **coverage + width insieme**, mai separati: due modelli con CRPS simile si distinguono solo qui (chi copre *restando stretto* vince; chi copre *allargando* "bara" sull'affilatezza).
+3. **MASE** per il puntuale, ricordando che è un **indice relativo** fra i nostri modelli (vedi il riquadro), non un "batte/non batte il naive".
+4. **pinball** solo come spunta di coerenza col CRPS.
+5. **fit_s / predict_s** per il costo, con il **caveat hardware** qui sotto.
 
 ### Costo
 
